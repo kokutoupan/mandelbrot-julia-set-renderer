@@ -21,7 +21,7 @@ function formatNumberWithoutRounding(number) {
 const c = document.getElementById('canvas');
 
 let cw, ch, run = true, eCheck;
-let startTime, time = 0.0, tempTime = 0.0, pretimer = 0;
+let startTime, time = 0.0, pretimer = 0;
 let running = false;
 let animationId;
 
@@ -120,7 +120,6 @@ function render() {
 function checkChange(e) {
     run = e.currentTarget.checked;
     if (run) { startTime = new Date().getTime(); render(); }
-    else { tempTime += time; }
 }
 
 Controls.init(cw, ch);
