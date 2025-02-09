@@ -1,17 +1,62 @@
 import { parseExpression } from './parser.js';
 
 
+const coloringFunctions = [
+    `
+    vec4 coloring(float t) {
+        return vec4(hsv2rgb(vec3(mod(time * 20.0, 360.0) / 360.0,0.8,1.0)) * t, 1.0);
+    }
+    `,
+    `
+    vec4 coloring(float t) {
+        float hue = fract(t + 0.5 * sin(time * 0.5)); // time を使って色相を変化
+        float saturation = 1.0;
+        float value = smoothstep(0.0, 1.0, sqrt(t)); // 明るさの調整
+        return vec4(hsv2rgb(vec3(hue, saturation, value)), 1.0);
+    }
+    `
+    ,
+    `
+    vec4 coloring(float t) {
+        vec3 rgb = hsv2rgb(vec3(mod(time * 20.0 + t*360.*4., 360.0) / 360.0, 0.8, 1.0));
 
-export function expressionToShader(userInput, mode) {
+        return vec4(rgb, 1.0);
+    }
+    `
+    ,
 
-  // ユーザー入力の式をフラグメントシェーダに反映
-  const glslExpression = parseExpression(userInput);
+    `
+    vec4 coloring(float t) {
+        float r = 0.5 + 0.5 * cos(6.28318 * (t + time * 0.1));
+        float g = 0.5 + 0.5 * cos(6.28318 * (t + 0.33 + time * 0.1));
+        float b = 0.5 + 0.5 * cos(6.28318 * (t + 0.67 + time * 0.1));
+        return vec4(r, g, b, 1.0);
+    }
+    `
+    ,
+    `
+    vec4 coloring(float t) {
+        float intensity = pow(t, 0.5) * 2.0; // ルートを取ることで発光風
+        float hue = fract(t + time * 0.1);
+        return vec4(hsv2rgb(vec3(hue, 1.0, intensity)), 1.0);
+    }
+    `
+]
+    ;
+
+export function expressionToShader(userInput, mode, sel) {
+
+    // ユーザー入力の式をフラグメントシェーダに反映
+    const glslExpression = parseExpression(userInput);
 
 
-  const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x* y;' : 'vec2 C = offset; vec2 z = x * y;';
+    const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x* y;' : 'vec2 C = offset; vec2 z = x * y;';
 
 
-  const fs = `#version 300 es
+    // 色付けの部分
+    const coloring = coloringFunctions[sel];
+
+    const fs = `#version 300 es
     precision highp float;
 
     layout(std140) uniform ShaderData {
@@ -25,25 +70,17 @@ export function expressionToShader(userInput, mode) {
 
   
     const float PI = 3.14159265359;
-  
-    vec3 hsv(float h, float s, float v){
-        vec4 t = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-        vec3 p = abs(fract(vec3(h) + t.xyz) * 6.0 - vec3(t.w));
-        return v * mix(vec3(t.x), clamp(p - vec3(t.x), 0.0, 1.0), s);
+    
+
+
+    // HSVからRGBへ変換
+    vec3 hsv2rgb(vec3 c) {
+        vec3 p = abs(fract(c.x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
+        return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
     }
-        
-    // float cosh(float x) {
-    //     return (exp(x) + exp(-x)) * 0.5;
-    // }
-  
-    // float sinh(float x) {
-    //     return (exp(x) - exp(-x)) * 0.5;
-    // }
-  
-    // float tanh(float x) {
-    //     return sinh(x) / cosh(x);
-    // }
-  
+
+
+    ${coloring}
   
     // 複素数四則演算
     vec2 add(vec2 a, vec2 b) {
@@ -210,12 +247,11 @@ export function expressionToShader(userInput, mode) {
             ${glslExpression};
   
         }
-        float h = mod(time * 20.0, 360.0) / 360.0;
-        vec3 rgb = hsv(h, 0.8, 1.0);
-        t = float(j)  / 1024.0;
-        outColor = vec4(rgb * t, 1.0);
+
+        outColor = coloring(float(j)/1024.0);
     }
     `;
 
-  return fs;
+    console.log(fs);
+    return fs;
 }

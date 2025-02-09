@@ -40,10 +40,10 @@ export class Renderer {
     }
 
 
-    resetShader(userInput, mode) {
+    resetShader(userInput, mode,sel) {
         console.log("resetShader");
         const gl = this.gl;
-        const fs = expressionToShader(userInput, mode);
+        const fs = expressionToShader(userInput, mode,sel);
 
         const prg = this.createProgram(this.vs, this.createFragmentShader(fs));
 

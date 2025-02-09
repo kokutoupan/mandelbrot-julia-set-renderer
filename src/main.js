@@ -75,7 +75,9 @@ function init() {
 
     const userInput = document.getElementById('fanc').value + " ";
 
-    renderer.resetShader(userInput, mode)
+    const coloring = Number(document.getElementById('coloring').value);
+
+    renderer.resetShader(userInput, mode,coloring);
 
 
     startTime = new Date().getTime();

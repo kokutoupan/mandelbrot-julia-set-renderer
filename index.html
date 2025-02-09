@@ -29,12 +29,24 @@
           <input type="radio" name="choice" value="Juri" /> ジュリア集合
         </label><br>
       </form>
+      <div>
+        彩色関数
+        <select id="coloring" name="coloring">
+          <option value="0">0:Time-Based Hue Shift</option>
+          <option value="1">1:Sinusoidal Hue Animation</option>
+          <option value="2">2:Dynamic Hue Based on Iteration</option>
+          <option value="3">3:Cosine-Based Spectrum</option>
+          <option value="4">4:Neon Glow Effect</option>
+        </select>
+      </div>
+
       <div class="scrollable">
         <div>
           <h3>使い方</h3>
           <p>複素数漸化式の式を入力してOKボタンを押してください</p>
           <p>例: z = z * z + C</p>
           <p>マンデルブロ集合なら'z',ジュリア集合なら'C'の初期値を下で指定可能(リアルタイム)</p>
+          <p>彩色関数を上のプルダウンで変更できます。</p>
           <p>初期値: Re:0, Im:0</p>
           <p>マウスでドラッグで移動</p>
           <p>マウスホイールでズームイン、ズームアウト</p>
@@ -342,4 +354,5 @@
   </div>
   <script type="module" src="src/main.js"></script>
 </body>
+
 </html>
