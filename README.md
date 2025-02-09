@@ -4,4 +4,4 @@
 
 PC用です。
 
-リンク[https://kokutoupan.github.io/mandelbrot-julia-set-renderer/](https://kokutoupan.github.io/mandelbrot-julia-set-renderer/)
+リンク:[https://kokutoupan.github.io/mandelbrot-julia-set-renderer/](https://kokutoupan.github.io/mandelbrot-julia-set-renderer/)
