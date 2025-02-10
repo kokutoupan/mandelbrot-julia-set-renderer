@@ -43,7 +43,7 @@ function init() {
     let ww = window.innerWidth;
     let wh = window.innerHeight;
 
-    wh -= 55;
+    wh -= 80;
 
     let canSize = 1024;
     if (wh < ww) {
@@ -52,6 +52,8 @@ function init() {
         canSize = ww;
     }
 
+    // cw = c.width;
+    // ch = c.height;
     cw = canSize; ch = canSize;
     c.width = cw; c.height = ch;
 
@@ -77,7 +79,7 @@ function init() {
 
     const coloring = Number(document.getElementById('coloring').value);
 
-    renderer.resetShader(userInput, mode,coloring);
+    renderer.resetShader(userInput, mode, coloring);
 
 
     startTime = new Date().getTime();

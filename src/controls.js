@@ -1,6 +1,5 @@
 export class Controls {
-    constructor() {
-    }
+    constructor() {}
 
     static isDragging = false;
     static startMousePos = { x: 0, y: 0 };
@@ -16,43 +15,64 @@ export class Controls {
         Controls.cw = cw;
         Controls.ch = ch;
 
-        window.addEventListener('keydown', function (event) {
-            if (event.key === 'j') {
-                Controls.zoom *= 1.1;
-            }
-            if (event.key === 'k') {
-                Controls.zoom *= 0.9;
-            }
-        });
-        document.getElementById('canvas').addEventListener('wheel', function (event) {
-            if (event.deltaY < 0) {
-                Controls.zoom *= 1.1; // 上にスクロールした場合、ズームイン
-            } else {
-                Controls.zoom *= 0.9; // 下にスクロールした場合、ズームアウト
-            }
+        const canvas = document.getElementById('canvas');
+
+        canvas.addEventListener('wheel', function (event) {
+            event.preventDefault();
+            Controls.zoom *= event.deltaY < 0 ? 1.1 : 0.9;
         });
 
-        document.getElementById('canvas').addEventListener('mousedown', (e) => {
+        canvas.addEventListener('mousedown', (e) => {
             Controls.isDragging = true;
             Controls.startMousePos = { x: e.clientX, y: e.clientY };
         });
 
         window.addEventListener('mousemove', (e) => {
             if (!Controls.isDragging) return;
-
-            const deltaX = e.clientX - Controls.startMousePos.x;
-            const deltaY = e.clientY - Controls.startMousePos.y;
-
-            Controls.mx = Math.max(-2, Math.min(3, Controls.mx + deltaX / Controls.cw * Controls.mouseKando * Controls.zoom));
-            Controls.my = Math.max(-2, Math.min(3, Controls.my + deltaY / Controls.ch * Controls.mouseKando * Controls.zoom));
-            // 現在のマウス位置を更新
-            Controls.startMousePos.x = e.clientX;
-            Controls.startMousePos.y = e.clientY;
+            Controls.handleMove(e.clientX, e.clientY);
         });
 
         window.addEventListener('mouseup', () => {
             Controls.isDragging = false;
         });
+
+        // スマホ用のタッチイベント
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                Controls.isDragging = true;
+                Controls.startMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!Controls.isDragging || e.touches.length !== 1) return;
+            Controls.handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('touchend', () => {
+            Controls.isDragging = false;
+        });
+
+        canvas.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('gesturechange', (e) => {
+            Controls.zoom *= e.scale > 1 ? 1.1 : 0.9;
+            e.preventDefault();
+        });
+    }
+
+    static handleMove(clientX, clientY) {
+        const deltaX = clientX - Controls.startMousePos.x;
+        const deltaY = clientY - Controls.startMousePos.y;
+
+        Controls.mx = Math.max(-2, Math.min(3, Controls.mx + deltaX / Controls.cw * Controls.mouseKando * Controls.zoom));
+        Controls.my = Math.max(-2, Math.min(3, Controls.my + deltaY / Controls.ch * Controls.mouseKando * Controls.zoom));
+
+        Controls.startMousePos.x = clientX;
+        Controls.startMousePos.y = clientY;
     }
 
     static clearPosAndZoom() {
