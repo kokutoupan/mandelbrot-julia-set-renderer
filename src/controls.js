@@ -47,7 +47,7 @@ export class Controls {
                 Controls.isDragging = true;
                 Controls.startMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 
-                if (new Date().getTime() - Controls.tapTime < 300) {
+                if (new Date().getTime() - Controls.tapTime < 500) {
                     Controls.isDobbleTap = true;
                 }
                 Controls.tapTime = new Date().getTime();
@@ -92,8 +92,6 @@ export class Controls {
 
         Controls.startMousePos.x = clientX;
         Controls.startMousePos.y = clientY;
-
-        console.log("zoom");
     }
 
     static clearPosAndZoom() {
