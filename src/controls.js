@@ -11,6 +11,8 @@ export class Controls {
     static cw = 500;
     static ch = 500;
 
+    static lastPinchDist = null;
+
     static init(cw, ch) {
         Controls.cw = cw;
         Controls.ch = ch;
@@ -41,26 +43,30 @@ export class Controls {
             if (e.touches.length === 1) {
                 Controls.isDragging = true;
                 Controls.startMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else if (e.touches.length === 2) {
+                Controls.lastPinchDist = Controls.getPinchDistance(e.touches);
             }
         });
 
         canvas.addEventListener('touchmove', (e) => {
-            if (!Controls.isDragging || e.touches.length !== 1) return;
-            Controls.handleMove(e.touches[0].clientX, e.touches[0].clientY);
-            e.preventDefault();
+            if (e.touches.length === 1 && Controls.isDragging) {
+                Controls.handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                e.preventDefault();
+            } else if (e.touches.length === 2) {
+                const newDist = Controls.getPinchDistance(e.touches);
+                if (Controls.lastPinchDist !== null) {
+                    Controls.zoom *= newDist / Controls.lastPinchDist;
+                }
+                Controls.lastPinchDist = newDist;
+                e.preventDefault();
+            }
         });
 
-        canvas.addEventListener('touchend', () => {
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                Controls.lastPinchDist = null;
+            }
             Controls.isDragging = false;
-        });
-
-        canvas.addEventListener('gesturestart', (e) => {
-            e.preventDefault();
-        });
-
-        canvas.addEventListener('gesturechange', (e) => {
-            Controls.zoom *= e.scale > 1 ? 1.1 : 0.9;
-            e.preventDefault();
         });
     }
 
@@ -73,6 +79,12 @@ export class Controls {
 
         Controls.startMousePos.x = clientX;
         Controls.startMousePos.y = clientY;
+    }
+
+    static getPinchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     static clearPosAndZoom() {
