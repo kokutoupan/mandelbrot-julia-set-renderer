@@ -1,5 +1,5 @@
 export class Controls {
-    constructor() {}
+    constructor() { }
 
     static isDragging = false;
     static startMousePos = { x: 0, y: 0 };
@@ -11,7 +11,8 @@ export class Controls {
     static cw = 500;
     static ch = 500;
 
-    static lastPinchDist = null;
+    static isDobbleTap = false;
+    static tapTime = 0;
 
     static init(cw, ch) {
         Controls.cw = cw;
@@ -40,34 +41,36 @@ export class Controls {
 
         // スマホ用のタッチイベント
         canvas.addEventListener('touchstart', (e) => {
+
             if (e.touches.length === 1) {
+
                 Controls.isDragging = true;
                 Controls.startMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            } else if (e.touches.length === 2) {
-                Controls.lastPinchDist = Controls.getPinchDistance(e.touches);
+
+                if (new Date().getTime() - Controls.tapTime < 300) {
+                    Controls.isDobbleTap = true;
+                }
+                Controls.tapTime = new Date().getTime();
             }
         });
 
         canvas.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 1 && Controls.isDragging) {
-                Controls.handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            if (!Controls.isDragging || e.touches.length !== 1) return;
+            if (Controls.isDobbleTap) {
+                // ズーム
+                Controls.handleZoom(e.touches[0].clientX, e.touches[0].clientY);
                 e.preventDefault();
-            } else if (e.touches.length === 2) {
-                const newDist = Controls.getPinchDistance(e.touches);
-                if (Controls.lastPinchDist !== null) {
-                    Controls.zoom *= newDist / Controls.lastPinchDist;
-                }
-                Controls.lastPinchDist = newDist;
-                e.preventDefault();
+                return;
             }
+            Controls.handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
         });
 
-        canvas.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                Controls.lastPinchDist = null;
-            }
+        canvas.addEventListener('touchend', () => {
             Controls.isDragging = false;
+            Controls.isDobbleTap = false;
         });
+
     }
 
     static handleMove(clientX, clientY) {
@@ -81,10 +84,16 @@ export class Controls {
         Controls.startMousePos.y = clientY;
     }
 
-    static getPinchDistance(touches) {
-        const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[1].clientY;
-        return Math.sqrt(dx * dx + dy * dy);
+    static handleZoom(clientX, clientY) {
+        const deltaX = clientX - Controls.startMousePos.x;
+        const deltaY = clientY - Controls.startMousePos.y;
+
+        Controls.zoom = Controls.zoom * Math.pow(1.01, deltaY);
+
+        Controls.startMousePos.x = clientX;
+        Controls.startMousePos.y = clientY;
+
+        console.log("zoom");
     }
 
     static clearPosAndZoom() {
