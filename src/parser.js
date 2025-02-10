@@ -64,7 +64,7 @@ class Lexer {
                 return new Token('OPERATOR', char);
             }
 
-            throw new Error(`Unexpected character: ${char}`);
+            throw new Error(`Unexpected character: ${this.position} : ${char}`);
         }
         return new Token('EOF', null);
     }
@@ -112,7 +112,7 @@ class Parser {
             this.eat('OPERATOR'); // Expect ')'
             return node;
         }
-        else if(token.value === '-'){
+        else if (token.value === '-') {
             this.eat('OPERATOR');
             let node = this.factor();
             return { value: `neg(${node.value})`, isComplex: node.isComplex };
@@ -166,10 +166,13 @@ class Parser {
 }
 
 export function parseExpression(input) {
-    let lexer = new Lexer(input);
-    let parser = new Parser(lexer);
-    return parser.parse();
-}
+    try {
+        let lexer = new Lexer(input);
+        let parser = new Parser(lexer);
+        return parser.parse();
+    } catch (e) {
+        alert(e.message);
+        return e.message;
+    }
 
-// テスト
-// console.log(parseExpression("z =sin(x, y) * (3 + c) * 2 - 8 / (4 + 1)"));
+}
