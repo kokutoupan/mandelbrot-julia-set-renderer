@@ -81,6 +81,14 @@ export function expressionToShader(userInput, mode, sel) {
 
 
     ${coloring}
+
+    float neg(float a) {
+        return -a;
+    }
+    
+    vec2 neg(vec2 a) {
+        return vec2(-a.x, -a.y);
+    }
   
     // 複素数四則演算
     vec2 add(vec2 a, vec2 b) {

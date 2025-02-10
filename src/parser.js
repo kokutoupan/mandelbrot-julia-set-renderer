@@ -112,6 +112,11 @@ class Parser {
             this.eat('OPERATOR'); // Expect ')'
             return node;
         }
+        else if(token.value === '-'){
+            this.eat('OPERATOR');
+            let node = this.factor();
+            return { value: `neg(${node.value})`, isComplex: node.isComplex };
+        }
         throw new Error(`Unexpected token in factor: ${token.value}`);
     }
 
