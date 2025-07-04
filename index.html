@@ -11,6 +11,7 @@
   <script type="module" src="src/expressionShader.js"></script>
   <script type="module" src="src/renderer.js  "></script>
   <script type="module" src="src/controls.js"></script>
+  <script type="module" src="complex-parser/pkg/complex_parser.js"></script>
 
 </head>
 
@@ -349,7 +350,7 @@
       <p><input type="checkbox" id="check" checked><label for="check"> run</label></p>
       <div>
         式
-        <input type="text" id="fanc" name="fanc" value="z = z * z + C" />
+        z=<input type="text" id="fanc" name="fanc" value="z * z + C" />
         初期値:
         Re:<input id="zr" type="number" value="0" />
         Ie:<input id="zi" type="number" value="0" />

@@ -20,6 +20,24 @@ export class Controls {
 
         const canvas = document.getElementById('canvas');
 
+        canvas.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') {
+            Controls.mx += 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowRight') {
+            Controls.mx -= 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowUp') {
+            Controls.my += 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowDown') {
+            Controls.my -= 0.1 * Controls.zoom;
+          }
+          else if (e.key === 'j') {
+            Controls.zoom *= 1.1;
+          }
+          else if (e.key === 'k') {
+            Controls.zoom *= 0.9;
+          }
+        })
+
         canvas.addEventListener('wheel', function (event) {
             event.preventDefault();
             Controls.zoom *= event.deltaY < 0 ? 1.1 : 0.9;

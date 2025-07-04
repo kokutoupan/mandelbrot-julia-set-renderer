@@ -1,5 +1,8 @@
 import { parseExpression } from './parser.js';
+import init,{get_glsl_output,set_panic_hook } from '../complex-parser/pkg/complex_parser.js';
 
+await init();
+set_panic_hook();
 
 const coloringFunctions = [
     `
@@ -47,7 +50,8 @@ const coloringFunctions = [
 export function expressionToShader(userInput, mode, sel) {
 
     // ユーザー入力の式をフラグメントシェーダに反映
-    const glslExpression = parseExpression(userInput);
+    // const glslExpression = parseExpression(userInput);
+    const glslExpression = get_glsl_output(userInput);
 
 
     const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x* y;' : 'vec2 C = offset; vec2 z = x * y;';
@@ -82,165 +86,113 @@ export function expressionToShader(userInput, mode, sel) {
 
     ${coloring}
 
-    float neg(float a) {
-        return -a;
-    }
-    
-    vec2 neg(vec2 a) {
-        return vec2(-a.x, -a.y);
-    }
   
-    // 複素数四則演算
-    vec2 add(vec2 a, vec2 b) {
-        return a + b;
+/**
+ * GLSL Helper Functions for Complex Number Operations
+ * A complex number z = x + iy is represented as vec2(x, y).
+ */
+
+// ---------------------------------------------
+// Section 1: Core Arithmetic & Hyperbolic Funcs
+// ---------------------------------------------
+
+// Complex multiplication: (a+bi) * (c+di) = (ac-bd) + (ad+bc)i
+vec2 cmul(vec2 a, vec2 b) {
+    return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+// Complex division: (a+bi) / (c+di)
+vec2 cdiv(vec2 a, vec2 b) {
+    float d = dot(b, b); // Denominator: |b|^2
+    // Return (0,0) if denominator is zero to avoid division by zero
+    if (d == 0.0) {
+        return vec2(0.0, 0.0);
     }
-    vec2 sub(vec2 a, vec2 b) {
-        return a - b;
+    return vec2(dot(a, b), a.y * b.x - a.x * b.y) / d;
+}
+
+// ---------------------------------------------
+// Section 2: Exponential, Logarithmic, Power
+// ---------------------------------------------
+
+// Complex natural logarithm: log(z) = log|z| + i*arg(z)
+vec2 clog(vec2 z) {
+    // Return (0,0) if z is zero
+    float r = length(z);
+    if (r == 0.0) {
+        return vec2(0.0, 0.0);
     }
-    vec2 mult(vec2 a, vec2 b) {
-        return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+    return vec2(log(r), atan(z.y, z.x));
+}
+
+// Complex exponential: exp(x+iy) = e^x * (cos(y) + i*sin(y))
+vec2 cexp(vec2 z) {
+    return exp(z.x) * vec2(cos(z.y), sin(z.y));
+}
+
+// Complex power: z^w = exp(w * log(z))
+vec2 cpow(vec2 base, vec2 exponent) {
+    // Return (0,0) if base is zero
+    if (length(base) == 0.0) {
+        return vec2(0.0, 0.0);
     }
-    vec2 div(vec2 a, vec2 b) {
-        float denom = b.x * b.x + b.y * b.y;
-        return vec2((a.x * b.x + a.y * b.y) / denom, (a.y * b.x - a.x * b.y) / denom);
-    }
-  
-    float add(float a, float b) {
-        return a + b;
-    }
-    float sub(float a, float b) {
-        return a - b;
-    }
-    float mult(float a, float b) {
-        return a * b;
-    }
-    float div(float a, float b) {
-        return a / b;
-    }
-  
-    vec2 add(float a, vec2 b) {
-        return vec2(a, 0.0) + b;
-    }
-    vec2 sub(float a, vec2 b) {
-        return vec2(a, 0.0) - b;
-    }
-    vec2 mult(float a, vec2 b) {
-        return vec2(a * b.x, a * b.y);
-    }
-    vec2 div(float a, vec2 b) {
-        float denom = b.x * b.x + b.y * b.y;
-        return vec2(a * b.x / denom, -a * b.y / denom);
-    }
-  
-    vec2 add(vec2 a, float b) {
-        return vec2(a.x + b,a.y);
-    }
-    vec2 sub(vec2 a, float b) {
-        return vec2(a.x - b ,a.y);
-    }
-    vec2 mult(vec2 a, float b) {
-        return a * b;
-    }
-    vec2 div(vec2 a, float b) {
-        return a / b;
-    }
-  
-    // 複素数演算
-    float Re(vec2 z) {
-        return z.x;
-    }
-    float Im(vec2 z) {
-        return z.y;
-    }
-    vec2 complex(float a, float b) {
-        return vec2(a, b);
-    }
-  
-    // 複素数の偏角（位相）
-    float argC(vec2 z) {
-        return atan(z.y, z.x);
-    }
-  
-    // 複素指数関数: exp(a + bi) = e^a * (cos(b) + i sin(b))
-    vec2 expC(vec2 z) {
-        float eRe = exp(z.x);
-        return vec2(eRe * cos(z.y), eRe * sin(z.y));
-    }
-  
-    // 複素対数関数: log(z) = log(|z|) + i arg(z)
-    vec2 logC(vec2 z) {
-        return vec2(log(length(z)), argC(z));
-    }
-  
-    // 複素数のべき乗: z^w = exp(w * log(z))
-    vec2 powC(vec2 base, vec2 exponent) {
-        return expC(vec2(exponent.x * logC(base).x - exponent.y * logC(base).y,
-                                  exponent.x * logC(base).y + exponent.y * logC(base).x));
-    }
-  
-    // 複素数のべき乗（実数指数）: z^r = exp(r * log(z))
-    vec2 powC(vec2 base, float exponent) {
-        vec2 logBase = logC(base);
-        vec2 mul = vec2(exponent * logBase.x, exponent * logBase.y);
-        return expC(mul);
-    }
-    
-    float absC(vec2 z) {
-        return length(z);
-    }
-  
-    vec2 conjC(vec2 z) {
-        return vec2(z.x, -z.y);
-    }
-  
-    // 平方根
-    vec2 sqrtC(vec2 z) {
-        float r = sqrt(absC(z));
-        float theta = argC(z) / 2.0;
-        return vec2(r * cos(theta), r * sin(theta));
-    }
-  
-    // 三角関数
-    vec2 sinC(vec2 v) {
-        return vec2(sin(v.x) * cosh(v.y), cos(v.x) * sinh(v.y));    
-    }
-    
-    vec2 cosC(vec2 v) {
-        return vec2(cos(v.x) * cosh(v.y), -sin(v.x) * sinh(v.y));
-    }
-  
-    vec2 tanC(vec2 z) {
-        return div(sinC(z), cosC(z));
-    }
-  
-    vec2 asinC(vec2 z) {
-        vec2 iz = vec2(-z.y, z.x);
-        vec2 sqrt_val = logC(add(iz, sqrtC(sub(vec2(1.0, 0.0), mult(z, z)))));
-        return vec2(-sqrt_val.y, sqrt_val.x);
-    }
-    
-    vec2 acosC(vec2 z) {
-        vec2 sqrt_val = logC(add(z, sqrtC(sub(mult(z, z), vec2(1.0, 0.0)))));
-        return vec2(PI / 2.0 - sqrt_val.y, -sqrt_val.x);
-    }
-  
-    vec2 atanC(vec2 z) {
-        vec2 iz = vec2(-z.y, z.x);
-        vec2 log1 = logC(sub(vec2(1.0, 0.0), iz));
-        vec2 log2 = logC(add(vec2(1.0, 0.0), iz));
-        return mult(vec2(0.0, -0.5), sub(log1, log2));
-    }
-  
-    
-  
-    //オーバーロード
-    
+    return cexp(cmul(exponent, clog(base)));
+}
+
+// ---------------------------------------------
+// Section 3: Trigonometric & Inverse Trig Funcs
+// ---------------------------------------------
+
+// Complex square root
+vec2 csqrt(vec2 z) {
+    float r = length(z);
+    return sqrt(r) * vec2(sqrt(0.5 * (r + z.x)), sign(z.y) * sqrt(0.5 * (r - z.x)));
+}
+
+// Complex sine: sin(x+iy) = sin(x)cosh(y) + i*cos(x)sinh(y)
+vec2 csin(vec2 z) {
+    return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
+}
+
+// Complex cosine: cos(x+iy) = cos(x)cosh(y) - i*sin(x)sinh(y)
+vec2 ccos(vec2 z) {
+    return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
+}
+
+// Complex tangent: tan(z) = csin(z) / ccos(z)
+vec2 ctan(vec2 z) {
+    return cdiv(csin(z), ccos(z));
+}
+
+// Complex arcsin: asin(z) = -i * log(i*z + sqrt(1-z^2))
+vec2 casin(vec2 z) {
+    vec2 i = vec2(0.0, 1.0);
+    vec2 one = vec2(1.0, 0.0);
+    vec2 log_val = clog(cmul(i, z) + csqrt(one - cmul(z, z)));
+    // multiply by -i (which is vec2(0, -1))
+    return vec2(log_val.y, -log_val.x);
+}
+
+// Complex arccos: acos(z) = pi/2 - asin(z)
+vec2 cacos(vec2 z) {
+    const float PI_2 = 1.57079632679;
+    return vec2(PI_2, 0.0) - casin(z);
+}
+
+// Complex arctan: atan(z) = (i/2) * log((i-z)/(i+z))
+vec2 catan(vec2 z) {
+    vec2 i = vec2(0.0, 1.0);
+    vec2 num = i - z;
+    vec2 den = i + z;
+    return cmul(vec2(0.0, 0.5), clog(cdiv(num, den)));
+}
+        
     
     // メイン関数
     void main(void){
         vec2 m = vec2(mouse.x * 2.0 - 1.0, -mouse.y * 2.0 + 1.0);
         vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-        float t = time;
+        vec2 t = vec2(time,0.);
         int j = 0;
         vec2 x = p - m / zoom;
         float y = zoom;
@@ -252,7 +204,7 @@ export function expressionToShader(userInput, mode, sel) {
   
             // ユーザーの式を動的に使う部分
             // ここでは 'z = z * z + c' などの式を文字列で組み込む
-            ${glslExpression};
+            z = ${glslExpression};
   
         }
 

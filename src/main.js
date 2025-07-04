@@ -128,14 +128,18 @@ function checkChange(e) {
 
 Controls.init(cw, ch);
 
-navigator.userAgentData.getHighEntropyValues(['mobile']).then((entropyValues) => {
-    if (entropyValues.mobile) {
-        Controls.isMobile = true;
-        console.log("isMobile");
-        document.getElementById('sousa1').innerText = "タッチで操作";
-        document.getElementById('sousa2').innerText = "ダブルタップ+上下スワイプでズーム";
-    }
-});
+if(navigator.userAgentData != null){
+  navigator.userAgentData.getHighEntropyValues(['mobile']).then((entropyValues) => {
+      if (entropyValues.mobile) {
+          Controls.isMobile = true;
+          console.log("isMobile");
+          document.getElementById('sousa1').innerText = "タッチで操作";
+          document.getElementById('sousa2').innerText = "ダブルタップ+上下スワイプでズーム";
+      }
+  }).catch((error) => {
+      console.error('Error getting user agent data:', error);
+  })
+}
 
 
 document.getElementById('setFunction').onclick = init;
