@@ -45,9 +45,8 @@ jobs:
 
       # 4. Wasmモジュールをビルド
       # --target web オプションで、ES Modulesとして利用しやすい形式で出力
-      # --out-dir ../pkg で、リポジトリのルートに "pkg" ディレクトリを作成して出力
       - name: Build Wasm
-        run: wasm-pack build ./complex-parser --target web --out-dir ../pkg
+        run: wasm-pack build ./complex-parser --target web
 
       # 5. GitHub Pagesの設定
       - name: Setup Pages
