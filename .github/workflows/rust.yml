@@ -1,0 +1,72 @@
+# .github/workflows/deploy.yml
+
+name: Deploy to GitHub Pages
+
+# mainブランチにpushされた時にワークフローを実行
+on:
+  push:
+    branches:
+      - main
+  # Actionsタブから手動で実行することも可能にする
+  workflow_dispatch:
+
+# ワークフローの権限設定
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# GITHUB_TOKENのタイムアウト設定
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. リポジトリをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Rustツールチェーンをセットアップ
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      # 3. wasm-packをインストール
+      # wasm-packはRustのコードをブラウザで使いやすいWasmパッケージにビルドするツール
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      # 4. Wasmモジュールをビルド
+      # --target web オプションで、ES Modulesとして利用しやすい形式で出力
+      # --out-dir ../pkg で、リポジトリのルートに "pkg" ディレクトリを作成して出力
+      - name: Build Wasm
+        run: wasm-pack build ./complex-parser --target web --out-dir ../pkg
+
+      # 5. GitHub Pagesの設定
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 6. ビルド成果物（サイト全体）をアーティファクトとしてアップロード
+      # ここにはサイトを構成するすべてのファイル/ディレクトリ（pkgも含む）を指定
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # リポジトリのルートディレクトリをアップロード
+          path: '.'
+
+  deploy:
+    # buildジョブが完了してから実行する
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # 7. GitHub Pagesにデプロイ
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
