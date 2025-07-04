@@ -20,6 +20,33 @@ export class Controls {
 
         const canvas = document.getElementById('canvas');
 
+        document.addEventListener('keydown', (e) => {
+          const target = e.target;
+
+          // 入力系要素のタグ名リスト
+          const inputTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+          // イベント発生元のタグ名がリストに含まれている場合は、処理を中断
+          if (inputTags.includes(target.tagName)) {
+              return;
+          }
+          if (e.key === 'ArrowLeft') {
+            Controls.mx += 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowRight') {
+            Controls.mx -= 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowUp') {
+            Controls.my += 0.1 * Controls.zoom;
+          } else if (e.key === 'ArrowDown') {
+            Controls.my -= 0.1 * Controls.zoom;
+          }
+          else if (e.key === 'j') {
+            Controls.zoom *= 1.1;
+          }
+          else if (e.key === 'k') {
+            Controls.zoom *= 0.9;
+          }
+        })
+
         canvas.addEventListener('wheel', function (event) {
             event.preventDefault();
             Controls.zoom *= event.deltaY < 0 ? 1.1 : 0.9;

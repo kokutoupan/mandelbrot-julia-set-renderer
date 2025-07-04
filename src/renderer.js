@@ -44,6 +44,9 @@ export class Renderer {
         console.log("resetShader");
         const gl = this.gl;
         const fs = expressionToShader(userInput, mode,sel);
+        if(fs == null)
+          return;
+    
 
         const prg = this.createProgram(this.vs, this.createFragmentShader(fs));
 
