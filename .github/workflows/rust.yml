@@ -28,6 +28,9 @@ jobs:
       # 1. リポジトリをチェックアウト
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # submoduleも再帰的にチェックアウトするためのオプション
+          submodules: 'recursive'
 
       # 2. Rustツールチェーンをセットアップ
       - name: Setup Rust toolchain
