@@ -7,7 +7,6 @@
   <title>マンデルブロ集合andジュリア集合 for webgl</title>
   <link rel="stylesheet" href="style.css">
 
-  <script type="module" src="src/parser.js"></script>
   <script type="module" src="src/expressionShader.js"></script>
   <script type="module" src="src/renderer.js  "></script>
   <script type="module" src="src/controls.js"></script>
@@ -63,17 +62,15 @@
             <p>複素数漸化式の式の書き方</p>
             <p>四則演算と関数呼び出しが可能</p>
             <p>例(Mandelbrot): <code>z = z * z + C</code></p>
-            <p>例(Mandelbrot): <code>z = powC(z,10.) + C</code></p>
+            <p>例(Mandelbrot): <code>z = pow(z,10) + C</code></p>
             <p>例(Julia): <code>z = z * z + sin(t*0.5)*0.5 + C</code></p>
 
 
           </details>
           <details>
             <summary>定義済み関数、変数一覧</summary>
-            <p>変数及び関数の説明</p>
-            <p>0以外はcomplexを表現しているvec2,floatへの定義であるため複素数としての正しい動作であるかは保証しない</p>
             <div>
-              <h3>0. 変数と複素関数</h3>
+              <h3>変数と複素関数</h3>
               <table>
                 <tr>
                   <th>関数</th>
@@ -95,250 +92,10 @@
                   <td><code>i</code></td>
                   <td>虚数単位(vec2),1.0i等の表記も可能</td>
                 </tr>
-                <tr>
-                  <td><code>Re(z)</code></td>
-                  <td>複素数zの実部(float)</td>
-                </tr>
-                <tr>
-                  <td><code>Im(z)</code></td>
-                  <td>複素数zの虚部を実数で(float)</td>
-                </tr>
-                <tr>
-                  <td><code>complex(a, b)</code></td>
-                  <td>実部a(float)、虚部b(float)の複素数を作る->(complex,vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>argC(z)</code></td>
-                  <td>複素数zの偏角（位相）を返す(float)</td>
-                </tr>
-                <tr>
-                  <td><code>expC(z)</code></td>
-                  <td>複素指数関数: exp(a + bi) = e^a * (cos(b) + i sin(b))</td>
-                </tr>
-                <tr>
-                  <td><code>logC(z)</code></td>
-                  <td>複素対数関数: log(z) = log(|z|) + i arg(z)</td>
-                </tr>
-                <tr>
-                  <td><code>powC(base, exponent)</code></td>
-                  <td>複素数のべき乗: z^w = exp(w * log(z))</td>
-                </tr>
-                <tr>
-                  <td><code>powC(base, exponent)</code></td>
-                  <td>複素数のべき乗（実数指数）: z^r = exp(r * log(z))</td>
-                </tr>
-                <tr>
-                  <td><code>absC(z)</code></td>
-                  <td>複素数zの絶対値を返す(float)</td>
-                </tr>
-                <tr>
-                  <td><code>conjC(z)</code></td>
-                  <td>複素数zの共役を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>sqrtC(z)</code></td>
-                  <td>複素数zの平方根を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>sinC(v)</code></td>
-                  <td>複素数vの正弦を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>cosC(v)</code></td>
-                  <td>複素数vの余弦を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>tanC(z)</code></td>
-                  <td>複素数zの正接を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>asinC(z)</code></td>
-                  <td>複素数zの逆正弦を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>acosC(z)</code></td>
-                  <td>複素数zの逆余弦を返す(vec2)</td>
-                </tr>
-                <tr>
-                  <td><code>atanC(z)</code></td>
-                  <td>複素数zの逆正接を返す(vec2)</td>
-                </tr>
-              </table>
-              <h3>1. 三角関数</h3>
-              <table>
-                <tr>
-                  <th>関数</th>
-                  <th>説明</th>
-                </tr>
-                <tr>
-                  <td><code>radians(degrees)</code></td>
-                  <td>度数をラジアンに変換</td>
-                </tr>
-                <tr>
-                  <td><code>degrees(radians)</code></td>
-                  <td>ラジアンを度数に変換</td>
-                </tr>
-                <tr>
-                  <td><code>sin(x)</code></td>
-                  <td>正弦関数</td>
-                </tr>
-                <tr>
-                  <td><code>cos(x)</code></td>
-                  <td>余弦関数</td>
-                </tr>
-                <tr>
-                  <td><code>tan(x)</code></td>
-                  <td>正接関数</td>
-                </tr>
-                <tr>
-                  <td><code>asin(x)</code></td>
-                  <td>逆正弦関数</td>
-                </tr>
-                <tr>
-                  <td><code>acos(x)</code></td>
-                  <td>逆余弦関数</td>
-                </tr>
-                <tr>
-                  <td><code>atan(y, x)</code></td>
-                  <td>atan(y/x) の逆正接（2引数版は象限考慮）</td>
-                </tr>
-                <tr>
-                  <td><code>sinh(x)</code></td>
-                  <td>双曲線正弦</td>
-                </tr>
-                <tr>
-                  <td><code>cosh(x)</code></td>
-                  <td>双曲線余弦</td>
-                </tr>
-                <tr>
-                  <td><code>tanh(x)</code></td>
-                  <td>双曲線正接</td>
-                </tr>
-              </table>
-              <h3>2. 指数・対数関数</h3>
-              <table>
-                <tr>
-                  <th>関数</th>
-                  <th>説明</th>
-                </tr>
-                <tr>
-                  <td><code>pow(x, y)</code></td>
-                  <td>x^y（べき乗）</td>
-                </tr>
-                <tr>
-                  <td><code>exp(x)</code></td>
-                  <td>e^x（指数関数）</td>
-                </tr>
-                <tr>
-                  <td><code>log(x)</code></td>
-                  <td>自然対数（ln(x)）</td>
-                </tr>
-                <tr>
-                  <td><code>exp2(x)</code></td>
-                  <td>2^x（2の指数関数）</td>
-                </tr>
-                <tr>
-                  <td><code>log2(x)</code></td>
-                  <td>log_2(x)（2を底とする対数）</td>
-                </tr>
-                <tr>
-                  <td><code>sqrt(x)</code></td>
-                  <td>平方根</td>
-                </tr>
-                <tr>
-                  <td><code>inversesqrt(x)</code></td>
-                  <td>1/sqrt(x)（逆平方根）</td>
-                </tr>
-              </table>
-              <h3>3. 誤差関数・補間</h3>
-              <table>
-                <tr>
-                  <th>関数</th>
-                  <th>説明</th>
-                </tr>
-                <tr>
-                  <td><code>abs(x)</code></td>
-                  <td>絶対値</td>
-                </tr>
-                <tr>
-                  <td><code>sign(x)</code></td>
-                  <td>符号（正なら1、負なら-1、ゼロなら0）</td>
-                </tr>
-                <tr>
-                  <td><code>floor(x)</code></td>
-                  <td>切り下げ</td>
-                </tr>
-                <tr>
-                  <td><code>ceil(x)</code></td>
-                  <td>切り上げ</td>
-                </tr>
-                <tr>
-                  <td><code>trunc(x)</code></td>
-                  <td>ゼロ方向への丸め（整数部分を返す）</td>
-                </tr>
-                <tr>
-                  <td><code>round(x)</code></td>
-                  <td>四捨五入</td>
-                </tr>
-                <tr>
-                  <td><code>fract(x)</code></td>
-                  <td>x - floor(x)（小数部分を返す）</td>
-                </tr>
-                <tr>
-                  <td><code>mod(x, y)</code></td>
-                  <td>x % y（剰余演算）</td>
-                </tr>
-                <tr>
-                  <td><code>min(x, y)</code></td>
-                  <td>最小値</td>
-                </tr>
-                <tr>
-                  <td><code>max(x, y)</code></td>
-                  <td>最大値</td>
-                </tr>
-                <tr>
-                  <td><code>clamp(x, minVal, maxVal)</code></td>
-                  <td>x を [minVal, maxVal] にクランプ</td>
-                </tr>
-                <tr>
-                  <td><code>mix(x, y, a)</code></td>
-                  <td>線形補間 (1-a) * x + a * y</td>
-                </tr>
-              </table>
-              <h3>4. 幾何学関数</h3>
-              <table>
-                <tr>
-                  <th>関数</th>
-                  <th>説明</th>
-                </tr>
-                <tr>
-                  <td><code>length(v)</code></td>
-                  <td>ベクトルの長さ</td>
-                </tr>
-                <tr>
-                  <td><code>distance(p1, p2)</code></td>
-                  <td>2点間の距離</td>
-                </tr>
-                <tr>
-                  <td><code>dot(v1, v2)</code></td>
-                  <td>内積</td>
-                </tr>
-                <tr>
-                  <td><code>cross(v1, v2)</code></td>
-                  <td>外積（3次元ベクトルのみ）</td>
-                </tr>
-                <tr>
-                  <td><code>normalize(v)</code></td>
-                  <td>正規化（単位ベクトル化）</td>
-                </tr>
-                <tr>
-                  <td><code>reflect(I, N)</code></td>
-                  <td>法線 N に対する I の反射ベクトル</td>
-                </tr>
-                <tr>
-                  <td><code>refract(I, N, eta)</code></td>
-                  <td>屈折ベクトル (eta = n1 / n2)</td>
-                </tr>
+                  <tr>
+                    <td><code>sin,cos,...</code></td>
+                    <td>数学関数</td>
+                  </tr>
               </table>
             </div>
           </details>

@@ -20,7 +20,16 @@ export class Controls {
 
         const canvas = document.getElementById('canvas');
 
-        canvas.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', (e) => {
+          const target = e.target;
+
+          // 入力系要素のタグ名リスト
+          const inputTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+          // イベント発生元のタグ名がリストに含まれている場合は、処理を中断
+          if (inputTags.includes(target.tagName)) {
+              return;
+          }
           if (e.key === 'ArrowLeft') {
             Controls.mx += 0.1 * Controls.zoom;
           } else if (e.key === 'ArrowRight') {

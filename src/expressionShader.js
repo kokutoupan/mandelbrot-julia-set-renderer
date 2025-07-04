@@ -1,4 +1,3 @@
-import { parseExpression } from './parser.js';
 import init,{get_glsl_output,set_panic_hook } from '../complex-parser/pkg/complex_parser.js';
 
 await init();
