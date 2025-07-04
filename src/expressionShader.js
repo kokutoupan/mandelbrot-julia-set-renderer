@@ -1,4 +1,4 @@
-import init,{get_glsl_output,set_panic_hook } from '../complex-parser/pkg/complex_parser.js';
+import init, { get_glsl_output, set_panic_hook } from '../complex-parser/pkg/complex_parser.js';
 
 await init();
 set_panic_hook();
@@ -21,7 +21,6 @@ const coloringFunctions = [
     `
     vec4 coloring(float t) {
         vec3 rgb = hsv2rgb(vec3(mod(time * 20.0 + t*360.*4., 360.0) / 360.0, 0.8, 1.0));
-
         return vec4(rgb, 1.0);
     }
     `
@@ -52,6 +51,11 @@ export function expressionToShader(userInput, mode, sel) {
     // const glslExpression = parseExpression(userInput);
     const glslExpression = get_glsl_output(userInput);
 
+    if (glslExpression.startsWith('Parse Error')) {
+        alert(glslExpression);
+        return;
+    }
+
 
     const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x* y;' : 'vec2 C = offset; vec2 z = x * y;';
 
@@ -69,22 +73,16 @@ export function expressionToShader(userInput, mode, sel) {
         float time;
         float zoom;
     };
-    out vec4 outColor; // ✅ gl_FragColor の代わり
-
-  
+    out vec4 outColor;
     const float PI = 3.14159265359;
     
-
-
     // HSVからRGBへ変換
     vec3 hsv2rgb(vec3 c) {
         vec3 p = abs(fract(c.x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
         return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
     }
 
-
     ${coloring}
-
   
 /**
  * GLSL Helper Functions for Complex Number Operations
@@ -185,7 +183,6 @@ vec2 catan(vec2 z) {
     vec2 den = i + z;
     return cmul(vec2(0.0, 0.5), clog(cdiv(num, den)));
 }
-        
     
     // メイン関数
     void main(void){
@@ -195,6 +192,7 @@ vec2 catan(vec2 z) {
         int j = 0;
         vec2 x = p - m / zoom;
         float y = zoom;
+
         ${select_part}
   
         for(int i = 0; i < 1024; i++){
