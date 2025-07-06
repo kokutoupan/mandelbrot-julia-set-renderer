@@ -197,7 +197,7 @@ vec2 catan(vec2 z) {
   
         for(int i = 0; i < 1024; i++){
             j++;
-            if(length(z) > 5.0){ break; }
+            if(dot(z,z) > 25.0){ break; }
   
             // ユーザーの式を動的に使う部分
             // ここでは 'z = z * z + c' などの式を文字列で組み込む
