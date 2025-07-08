@@ -57,7 +57,7 @@ export function expressionToShader(userInput, mode, sel) {
     }
 
 
-    const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x* y;' : 'vec2 C = offset; vec2 z = x * y;';
+    const select_part = mode === 0 ? 'vec2 z = offset; vec2 C = x;' : 'vec2 C = offset; vec2 z = x;';
 
 
     // 色付けの部分
@@ -190,8 +190,7 @@ void main(void){
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
     vec2 t = vec2(time,0.);
     int j = 0;
-    vec2 x = p - m / zoom;
-    float y = zoom;
+    vec2 x = p * zoom - m;
 
     ${select_part}
 

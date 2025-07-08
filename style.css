@@ -10,7 +10,7 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --spacing-xs: 4px;
   --spacing-s: 8px;
-  --spacing-m: 16px;
+  --spacing-m: 12px;
   --spacing-l: 24px;
   --border-radius: 6px;
 }
@@ -42,7 +42,7 @@ body {
 }
 
 .canvas-container {
-  flex: 2; /* 画面幅の2/3を占める */
+  flex: 2;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -70,12 +70,12 @@ canvas {
 }
 
 .panel-container {
-  flex: 1; /* 画面幅の1/3を占める */
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-m);
-  overflow-y: auto; /* パネル内が長くなったらスクロール */
-  padding-right: var(--spacing-s); /* スクロールバー用の余白 */
+  overflow-y: auto;
+  padding-right: var(--spacing-s);
 }
 
 /* --- カードスタイル --- */
@@ -101,8 +101,6 @@ canvas {
   align-items: center;
   gap: var(--spacing-m);
 }
-
-/* ▼▼▼ ここから追加・変更 ▼▼▼ */
 .formula-group {
   display: flex;
   flex-direction: row;
@@ -112,22 +110,24 @@ canvas {
 .formula-group label {
   font-size: 1.2em;
   font-weight: 700;
-  white-space: nowrap; /* "z ="が改行されないように */
+  white-space: nowrap;
 }
 .formula-group .form-input {
-  flex-grow: 1; /* 入力欄が伸びるように */
+  flex-grow: 1;
 }
-/* ▲▲▲ ここまで ▲▲▲ */
 
-
-.form-input, .form-select, .btn {
-  width: 100%;
+/* ▼▼▼ この部分を変更しました ▼▼▼ */
+/* 入力欄とセレクトボックスのスタイル */
+.form-input, .form-select {
+  width: 100%; /* これらは幅100%のまま */
   padding: var(--spacing-s) 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   font-size: 16px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+/* ▲▲▲ ここまで ▲▲▲ */
+
 .form-input:focus, .form-select:focus {
   outline: none;
   border-color: var(--primary-color);
@@ -146,6 +146,10 @@ label {
 
 /* --- ボタン --- */
 .btn {
+  /* width: 100% を削除し、幅を自動調整に */
+  padding: var(--spacing-s) 10px;
+  border-radius: var(--border-radius);
+  font-size: 14px;
   cursor: pointer;
   background-color: #6c757d;
   color: white;
@@ -175,18 +179,14 @@ details {
 }
 summary {
   font-weight: 700;
-  padding: 12px var(--spacing-m); /* 縦の余白を調整 */
+  padding: 12px var(--spacing-m);
   cursor: pointer;
 }
-
-/* ▼▼▼ ここを変更 ▼▼▼ */
 .details-content {
-  padding: var(--spacing-s) var(--spacing-m) var(--spacing-m); /* 上の余白を少し追加 */
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-m);
   font-size: 14px;
-  line-height: 1.7; /* 行の高さを広げて読みやすく */
+  line-height: 1.7;
 }
-/* ▲▲▲ ここまで ▲▲▲ */
-
 table {
   width: 100%;
   border-collapse: collapse;
