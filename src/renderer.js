@@ -1,11 +1,6 @@
 import { expressionToShader } from "./expressionShader.js";
 
 export class Renderer {
-
-    vs = null;
-
-    uboBlockIndex = null;
-
     constructor(canvas) {
         this.canvas = canvas;
         const gl = canvas.getContext('webgl2');
@@ -47,9 +42,7 @@ export class Renderer {
         if(fs == null)
           return;
     
-
         const prg = this.createProgram(this.vs, this.createFragmentShader(fs));
-
 
         const vAttLocation = gl.getAttribLocation(prg, 'position');
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vPosition);
@@ -60,7 +53,6 @@ export class Renderer {
         this.uboBlockIndex = gl.getUniformBlockIndex(prg, "ShaderData"); // ← ここ重要！
         gl.uniformBlockBinding(prg, this.uboBlockIndex, 0);
         gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo);
-
 
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
     }

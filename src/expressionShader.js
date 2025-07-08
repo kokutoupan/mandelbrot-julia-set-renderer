@@ -64,25 +64,25 @@ export function expressionToShader(userInput, mode, sel) {
     const coloring = coloringFunctions[sel];
 
     const fs = `#version 300 es
-    precision highp float;
+precision highp float;
 
-    layout(std140) uniform ShaderData {
-        vec2 mouse;
-        vec2 resolution;
-        vec2 offset;
-        float time;
-        float zoom;
-    };
-    out vec4 outColor;
-    const float PI = 3.14159265359;
-    
-    // HSVからRGBへ変換
-    vec3 hsv2rgb(vec3 c) {
-        vec3 p = abs(fract(c.x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
-        return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
-    }
+layout(std140) uniform ShaderData {
+    vec2 mouse;
+    vec2 resolution;
+    vec2 offset;
+    float time;
+    float zoom;
+};
+out vec4 outColor;
+const float PI = 3.14159265359;
 
-    ${coloring}
+// HSVからRGBへ変換
+vec3 hsv2rgb(vec3 c) {
+    vec3 p = abs(fract(c.x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
+    return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
+}
+
+${coloring}
   
 /**
  * GLSL Helper Functions for Complex Number Operations
@@ -184,31 +184,31 @@ vec2 catan(vec2 z) {
     return cmul(vec2(0.0, 0.5), clog(cdiv(num, den)));
 }
     
-    // メイン関数
-    void main(void){
-        vec2 m = vec2(mouse.x * 2.0 - 1.0, -mouse.y * 2.0 + 1.0);
-        vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-        vec2 t = vec2(time,0.);
-        int j = 0;
-        vec2 x = p - m / zoom;
-        float y = zoom;
+// メイン関数
+void main(void){
+    vec2 m = vec2(mouse.x * 2.0 - 1.0, -mouse.y * 2.0 + 1.0);
+    vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+    vec2 t = vec2(time,0.);
+    int j = 0;
+    vec2 x = p - m / zoom;
+    float y = zoom;
 
-        ${select_part}
-  
-        for(int i = 0; i < 1024; i++){
-            j++;
-            if(dot(z,z) > 25.0){ break; }
-  
-            // ユーザーの式を動的に使う部分
-            // ここでは 'z = z * z + c' などの式を文字列で組み込む
-            z = ${glslExpression};
-  
-        }
+    ${select_part}
 
-        outColor = coloring(float(j)/1024.0);
+    for(int i = 0; i < 1024; i++){
+        j++;
+        if(dot(z,z) > 25.0){ break; }
+
+        // ユーザーの式を動的に使う部分
+        // ここでは 'z = z * z + c' などの式を文字列で組み込む
+        z = ${glslExpression};
+
     }
+
+    outColor = coloring(float(j)/1024.0);
+}
     `;
 
-    console.log(fs);
+    console.log('z = ' + glslExpression);
     return fs;
 }

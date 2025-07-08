@@ -11,7 +11,7 @@
   <script type="module" src="src/renderer.js  "></script>
   <script type="module" src="src/controls.js"></script>
   <script type="module" src="complex-parser/pkg/complex_parser.js"></script>
-
+  <script type="module" src="src/main.js"></script>
 </head>
 
 <body>
@@ -23,7 +23,10 @@
       </div>
       <div class="info-container">
         <p id='datas'> data</p>
-        <button id="clearButton">リセット</button>
+        <div>
+            <button id="clearButton">リセット</button>
+            <button id="shareButton">共有リンクをコピー</button>
+        </div>
         <form id="radioForm">
           <label>
             <input type="radio" name="choice" value="MON" checked /> マンデルブロ集合
@@ -124,7 +127,6 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js"></script>
 </body>
 
 </html>
