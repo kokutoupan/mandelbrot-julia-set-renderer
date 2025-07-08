@@ -209,7 +209,10 @@ class FractalApp {
      * @param {number} currentTime - 現在の時間（秒）
      */
     updateUI(currentTime) {
-        this.dataElm.innerText = `position: ${Controls.mx}, ${Controls.my}\nzoom: ${Controls.zoom}`;
+        const posText = `Position: (${Controls.mx.toFixed(4)}, ${Controls.my.toFixed(4)})`;
+        const zoomText = `Zoom: ${Controls.zoom.toFixed(2)}`;
+        
+        this.dataElm.innerText = `${posText} | ${zoomText}`;
 
         const deltaTime = currentTime - this.lastFrameTime;
         if (deltaTime > 0) {

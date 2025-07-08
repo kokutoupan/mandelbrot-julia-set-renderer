@@ -1,112 +1,220 @@
+/* --- CSS変数定義 --- */
+:root {
+  --font-family: 'Noto Sans JP', sans-serif;
+  --bg-color: #f0f2f5;
+  --panel-bg-color: #ffffff;
+  --text-color: #333;
+  --primary-color: #007bff;
+  --primary-color-hover: #0056b3;
+  --border-color: #dee2e6;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --spacing-xs: 4px;
+  --spacing-s: 8px;
+  --spacing-m: 16px;
+  --spacing-l: 24px;
+  --border-radius: 6px;
+}
+
+/* --- 全体スタイル --- */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    height: 100vh;
-    overflow: hidden;
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
 }
 
+/* --- レイアウト --- */
 .container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    display: flex;
-}
-
-.formula-container {
-    text-align: center;
-    gap: 10px;
-    align-items: center;
-    height: 80px;
-    flex-shrink: 0;
-}
-
-
-.main-container {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    width: 100%;
-    height: calc(100vh - 80px); /* フォームの高さを引く */
-    gap: 10px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: var(--spacing-m);
+  gap: var(--spacing-m);
 }
 
 .canvas-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50%;
-    flex-shrink: 0; /* 必要以上に縮まないようにする */
-    max-height: 100%;
+  flex: 2; /* 画面幅の2/3を占める */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-width: 0;
 }
 
 canvas {
-    box-shadow: 0px 0px 2px 1px gray;
-    max-width: 100%;
-    max-height: 100%;
-    /* 正方形を維持
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1; */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border-radius: var(--border-radius);
 }
 
 #fpsCounter {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: yellow;
-    padding: 5px 10px;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    border-radius: 5px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: var(--border-radius);
 }
 
-.info-container {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid black;
-    background: #f9f9f9;
+.panel-container {
+  flex: 1; /* 画面幅の1/3を占める */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+  overflow-y: auto; /* パネル内が長くなったらスクロール */
+  padding-right: var(--spacing-s); /* スクロールバー用の余白 */
+}
+
+/* --- カードスタイル --- */
+.card {
+  background-color: var(--panel-bg-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-m);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+/* --- フォームコントロール --- */
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+.control-group-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-m);
+}
+
+/* ▼▼▼ ここから追加・変更 ▼▼▼ */
+.formula-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+.formula-group label {
+  font-size: 1.2em;
+  font-weight: 700;
+  white-space: nowrap; /* "z ="が改行されないように */
+}
+.formula-group .form-input {
+  flex-grow: 1; /* 入力欄が伸びるように */
+}
+/* ▲▲▲ ここまで ▲▲▲ */
+
+
+.form-input, .form-select, .btn {
+  width: 100%;
+  padding: var(--spacing-s) 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+.form-input.small {
+  width: 80px;
+}
+label {
+  font-weight: 700;
+  font-size: 14px;
+}
+#radioForm label {
+  font-weight: 400;
+}
+
+/* --- ボタン --- */
+.btn {
+  cursor: pointer;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  white-space: nowrap;
+}
+.btn:hover {
+  background-color: #5a6268;
+}
+.btn.btn-primary {
+  background-color: var(--primary-color);
+}
+.btn.btn-primary:hover {
+  background-color: var(--primary-color-hover);
+}
+
+/* --- 情報エリア --- */
+.scrollable-info {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+details {
+  background-color: var(--panel-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-s);
+}
+summary {
+  font-weight: 700;
+  padding: 12px var(--spacing-m); /* 縦の余白を調整 */
+  cursor: pointer;
+}
+
+/* ▼▼▼ ここを変更 ▼▼▼ */
+.details-content {
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-m); /* 上の余白を少し追加 */
+  font-size: 14px;
+  line-height: 1.7; /* 行の高さを広げて読みやすく */
+}
+/* ▲▲▲ ここまで ▲▲▲ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-s);
+}
+th, td {
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-s);
+  text-align: left;
+}
+th {
+  background-color: #f8f9fa;
+}
+code {
+  background-color: #e9ecef;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* --- レスポンシブ対応 --- */
+@media (max-width: 768px) {
+  body {
     overflow-y: auto;
-}
-
-.scrollable {
-    overflow: auto;
-    padding: 10px;
-    border: 1px solid black;
-    background: white;
-    width: 100%;
-}
-
-#fanc {
-    width: 300px;
-}
-
-@media (max-width: 600px) {
-    body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-        height: 100vh;
-        overflow: scroll;
-    }
-    
-    .main-container {
-        flex-direction: column;
-    }
-
-    .canvas-container {
-        width: 100%;
-    }
+  }
+  .container {
+    flex-direction: column;
+  }
+  .panel-container {
+    overflow-y: visible;
+  }
 }
