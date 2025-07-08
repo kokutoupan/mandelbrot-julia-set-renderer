@@ -1,5 +1,3 @@
-import { expressionToShader } from "./expressionShader.js";
-
 export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
@@ -35,12 +33,9 @@ export class Renderer {
     }
 
 
-    resetShader(userInput, mode,sel) {
+    resetShader(fs) {
         console.log("resetShader");
         const gl = this.gl;
-        const fs = expressionToShader(userInput, mode,sel);
-        if(fs == null)
-          return;
     
         const prg = this.createProgram(this.vs, this.createFragmentShader(fs));
 

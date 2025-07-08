@@ -1,6 +1,6 @@
 import { Renderer } from './renderer.js';
 import { Controls } from './controls.js';
-
+import { expressionToShader } from "./expressionShader.js";
 /**
  * アプリケーション全体を管理するクラス
  */
@@ -113,6 +113,8 @@ class FractalApp {
         Controls.cw = size;
         Controls.ch = size;
 
+        console.log(`resize: width=${size}, height=${size}`);
+
         // リサイズ後は再描画が必要なため、シェーダーをリセット
         if (this.renderer.isReady) {
             this.reset();
@@ -122,7 +124,7 @@ class FractalApp {
     /**
      * アニメーションをリセットし、新しい設定で再開する
      */
-    reset() {
+    async reset() {
         this.stopAnimation();
 
         const selectedRadio = document.querySelector('input[name="choice"]:checked');
@@ -130,7 +132,12 @@ class FractalApp {
         const userInput = this.functionInput.value + " ";
         const coloring = Number(this.coloringSelect.value);
 
-        this.renderer.resetShader(userInput, mode, coloring);
+        const fs = await expressionToShader(userInput, mode, coloring);
+
+        if(fs == null)
+          return;
+
+        this.renderer.resetShader(fs);
 
         // チェックボックスがONの場合のみアニメーションを開始
         if (this.runCheckbox.checked) {
