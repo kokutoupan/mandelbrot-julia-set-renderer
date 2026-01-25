@@ -3,6 +3,7 @@ export class Renderer {
         this.canvas = canvas;
         const gl = canvas.getContext('webgl2');
         this.gl = gl;
+        
         if (!this.gl) {
             console.error("WebGL2 is not supported in your browser");
             return;
@@ -15,21 +16,13 @@ export class Renderer {
         this.vPosition = this.createVbo(position);
         this.vIndex = this.createIbo(index);
 
-
-        // this.uboData = new Float32Array([
-        //     0.0, // mouse.x
-        //     0.0, // mouse.y
-        //     0.0, // resolution.x
-        //     0.0, // resolution.y
-        //     0.0, // offset.x
-        //     0.0, // offset.y
-        //     0.0, // time
-        //     0.0, // zoom
-        // ]);
-
         this.ubo = gl.createBuffer();
         gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo);
-        gl.bufferData(gl.UNIFORM_BUFFER, 8 * 4 * 4, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.UNIFORM_BUFFER, 8 * 4 * 4, gl.DYNAMIC_DRAW); // Size: 8 floats * 4 bytes/float * 4 (padding safety or just generous? actually 8 floats is just 32 bytes. wait 8*4*4 is 128 bytes. The shader probably uses std140 which has padding.)
+        // Actually, the array sent is 8 floats. 
+        // Float32Array length 8. 8 * 4 = 32 bytes minimum.
+        // But std140 alignment might require more. 
+        // Let's keep the size logic as original for safety unless I checked the shader.
     }
 
 

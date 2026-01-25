@@ -22,7 +22,6 @@ const coloringShaders = [
 export async function expressionToShader(userInput, mode, sel) {
 
     // ユーザー入力の式をフラグメントシェーダに反映
-    // const glslExpression = parseExpression(userInput);
     const glslExpression = get_glsl_output(userInput);
 
     if (glslExpression.startsWith('Parse Error')) {
