@@ -1,0 +1,29 @@
+{
+  "name": "mandelbrot-julia-set-renderer",
+  "version": "1.0.0",
+  "description": "ユーザが入力した漸化式をもとにfragment shaderを作成しマンデルブロ集合及びジュリア集合を描画するwebアプリです。",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kokutoupan/mandelbrot-julia-set-renderer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+
+  "bugs": {
+    "url": "https://github.com/kokutoupan/mandelbrot-julia-set-renderer/issues"
+  },
+  "homepage": "https://github.com/kokutoupan/mandelbrot-julia-set-renderer#readme",
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
+  }
+}

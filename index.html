@@ -1,58 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>マンデルブロ集合 & ジュリア集合 for WebGL</title>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マンデルブロ集合 & ジュリア集合 for WebGL</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <script type="module" src="src/expressionShader.js"></script>
-  <script type="module" src="src/renderer.js"></script>
-  <script type="module" src="src/controls.js"></script>
-  <script type="module" src="complex-parser/pkg/complex_parser.js"></script>
-  <script type="module" src="src/main.js"></script>
-</head>
+    <link rel="stylesheet" href="style.css" />
 
-<body>
-  <div class="container">
-    <div class="canvas-container">
-      <canvas id="canvas" width="1024" height="1024"></canvas>
-      <div id="fpsCounter">FPS: 1</div>
-    </div>
+    <script type="module" src="src/main.js"></script>
+  </head>
 
-    <div class="panel-container">
-      
-      <div class="card">
-        <div class="formula-group">
-          <label for="fanc">z =</label>
-          <input type="text" id="fanc" class="form-input" name="fanc" value="z * z + C" />
-          <button id="setFunction" class="btn btn-primary">適用</button>
-        </div>
-        <div class="control-group-row">
-          <div class="control-group">
-            <label>初期値:</label>
-            <div>
-              Re:<input id="zr" class="form-input small" type="number" value="0" step="0.01"/>
-              Im:<input id="zi" class="form-input small" type="number" value="0" step="0.01"/>
+  <body>
+    <div class="container">
+      <div class="canvas-container">
+        <canvas id="canvas" width="1024" height="1024"></canvas>
+        <div id="fpsCounter">FPS: 1</div>
+      </div>
+
+      <div class="panel-container">
+        <div class="card">
+          <div class="formula-group">
+            <label for="fanc">z =</label>
+            <input
+              type="text"
+              id="fanc"
+              class="form-input"
+              name="fanc"
+              value="z * z + C"
+            />
+            <button id="setFunction" class="btn btn-primary">適用</button>
+          </div>
+          <div class="control-group-row">
+            <div class="control-group">
+              <label>初期値:</label>
+              <div>
+                Re:<input
+                  id="zr"
+                  class="form-input small"
+                  type="number"
+                  value="0"
+                  step="0.01"
+                />
+                Im:<input
+                  id="zi"
+                  class="form-input small"
+                  type="number"
+                  value="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div class="control-group">
+              <label for="check"
+                ><input type="checkbox" id="check" checked />
+                アニメーション実行</label
+              >
             </div>
           </div>
-          <div class="control-group">
-             <label for="check"><input type="checkbox" id="check" checked> アニメーション実行</label>
-          </div>
-        </div>
 
-        <div class="control-group-row">
+          <div class="control-group-row">
             <div class="control-group">
               <label for="radioForm">集合の種類:</label>
               <form id="radioForm">
-                <label><input type="radio" name="choice" value="MON" checked /> マンデルブロ</label>
-                <label><input type="radio" name="choice" value="Juri" /> ジュリア</label>
+                <label
+                  ><input type="radio" name="choice" value="MON" checked />
+                  マンデルブロ</label
+                >
+                <label
+                  ><input type="radio" name="choice" value="Juri" />
+                  ジュリア</label
+                >
               </form>
             </div>
             <div class="control-group">
@@ -65,53 +89,82 @@
                 <option value="4">4: Neon Glow</option>
               </select>
             </div>
-        </div>
-        
-        <div class="control-group-row">
-          <button id="clearButton" class="btn">表示をリセット</button>
-          <button id="shareButton" class="btn">共有リンクをコピー</button>
-        </div>
-      </div>
+          </div>
 
-      <div class="card">
-          <p id='datas'> data</p>
-      </div>
+          <div class="control-group-row">
+            <button id="clearButton" class="btn">表示をリセット</button>
+            <button id="shareButton" class="btn">共有リンクをコピー</button>
+          </div>
+        </div>
 
-      <div class="scrollable-info">
-        <details open>
-          <summary>使い方</summary>
-          <div class="details-content">
-            <p id="sousa1">マウスドラッグで移動</p>
-            <p id="sousa2">マウスホイールでズーム</p>
-            <p>キーボードでズームイン: `k`, ズームアウト: `j`</p>
-          </div>
-        </details>
-        <details>
-          <summary>複素数漸化式の書き方</summary>
-          <div class="details-content">
-            <p>四則演算と関数呼び出しが可能です。</p>
-            <p>例(Mandelbrot): <code>z = z * z + C</code></p>
-            <p>例(Julia): <code>z = z * z + ln(sin(t*0.5) + 1.4)*0.5 + C</code></p>
-          </div>
-        </details>
-        <details>
-          <summary>定義済み関数・変数一覧</summary>
-          <div class="details-content">
-             <table>
-              <tr><th>名前</th><th>説明</th></tr>
-              <tr><td><code>z</code></td><td>複素数 (vec2)</td></tr>
-              <tr><td><code>C</code></td><td>複素数 (vec2)</td></tr>
-              <tr><td><code>t</code></td><td>時間 (float)</td></tr>
-              <tr><td><code>i</code></td><td>虚数単位 (vec2)</td></tr>
-              <tr><td><code>pi,e</code></td><td>円周率,ネイピア数</td></tr>
-              <tr><td><code>real,imag,conj</code></td><td>複素数操作</td></tr>
-              <tr><td><code>sin,cos,tan,asin...</code></td><td>三角関数,逆三角関数</td></tr>
-              <tr><td><code>sqrt,pow,exp,log,ln,abs</code></td><td>各種数学関数</td></tr>
-            </table>
-          </div>
-        </details>
+        <div class="card">
+          <p id="datas">data</p>
+        </div>
+
+        <div class="scrollable-info">
+          <details open>
+            <summary>使い方</summary>
+            <div class="details-content">
+              <p id="sousa1">マウスドラッグで移動</p>
+              <p id="sousa2">マウスホイールでズーム</p>
+              <p>キーボードでズームイン: `k`, ズームアウト: `j`</p>
+            </div>
+          </details>
+          <details>
+            <summary>複素数漸化式の書き方</summary>
+            <div class="details-content">
+              <p>四則演算と関数呼び出しが可能です。</p>
+              <p>例(Mandelbrot): <code>z = z * z + C</code></p>
+              <p>
+                例(Julia): <code>z = z * z + ln(sin(t*0.5) + 1.4)*0.5 + C</code>
+              </p>
+            </div>
+          </details>
+          <details>
+            <summary>定義済み関数・変数一覧</summary>
+            <div class="details-content">
+              <table>
+                <tr>
+                  <th>名前</th>
+                  <th>説明</th>
+                </tr>
+                <tr>
+                  <td><code>z</code></td>
+                  <td>複素数 (vec2)</td>
+                </tr>
+                <tr>
+                  <td><code>C</code></td>
+                  <td>複素数 (vec2)</td>
+                </tr>
+                <tr>
+                  <td><code>t</code></td>
+                  <td>時間 (float)</td>
+                </tr>
+                <tr>
+                  <td><code>i</code></td>
+                  <td>虚数単位 (vec2)</td>
+                </tr>
+                <tr>
+                  <td><code>pi,e</code></td>
+                  <td>円周率,ネイピア数</td>
+                </tr>
+                <tr>
+                  <td><code>real,imag,conj</code></td>
+                  <td>複素数操作</td>
+                </tr>
+                <tr>
+                  <td><code>sin,cos,tan,asin...</code></td>
+                  <td>三角関数,逆三角関数</td>
+                </tr>
+                <tr>
+                  <td><code>sqrt,pow,exp,log,ln,abs</code></td>
+                  <td>各種数学関数</td>
+                </tr>
+              </table>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>
