@@ -2,6 +2,12 @@ import { WebGLRenderer } from "./renderer/WebglRenderer";
 import { InputManager } from "./InputManager";
 import { UIManager } from "./UIManager";
 import { IRenderer } from "./renderer/IRenderer";
+import { ShaderFactory } from "./shader/ShaderFactory";
+import {
+  ShaderConfig,
+  ShaderBackend,
+  ShaderPrecision,
+} from "./shader/ShaderConfig";
 
 /**
  * Main Application Class
@@ -44,7 +50,7 @@ export class App {
     this.inputManager.updateDimensions(
       window.innerWidth,
       window.innerHeight - 80,
-    ); // roughly
+    );
 
     // 2. Bind UI events
     this.uiManager.bindEvents({
@@ -52,9 +58,7 @@ export class App {
       onReset: () => this.reset(),
       onClear: () => this.inputManager.reset(),
       onToggleAnimation: (checked: boolean) => this.toggleAnimation(checked),
-      onOffsetChange: () => {
-        /* Offsets are read directly when needed, or we can sync here if strict state needed */
-      },
+      onOffsetChange: () => {},
     });
 
     // 3. Mobile check
@@ -83,17 +87,11 @@ export class App {
 
   resizeCanvas() {
     const ww = window.innerWidth;
-    const wh = window.innerHeight - 80; // UI_OFFSET_HEIGHT
+    const wh = window.innerHeight - 80;
     const size = Math.min(ww, wh, 1024);
 
     this.renderer.resize(size, size);
 
-    // Canvas size is also set in UIManager?
-    // Wait, WebGLRenderer resize might update canvas.width/height too or just viewport.
-    // In current implementation step 188, WebGLRenderer only updates viewport!
-    // But UIManager holds the canvas reference.
-    // I should probably ensure canvas dimensions are updated.
-    // UIManager.ts has no method to resize canvas, but it exposes .canvas getter.
     this.uiManager.canvas.width = size;
     this.uiManager.canvas.height = size;
 
@@ -101,13 +99,6 @@ export class App {
 
     console.log(`resize: width=${size}, height=${size}`);
 
-    // In previous code, we called reset().
-    // If shader depends on screen size? No, usually uniforms.
-    // But let's call reset() to be safe if desired, or just trigger render.
-    // The previous code had: if (this.renderer.isReady || true) this.reset();
-
-    // If just resizing, we don't necessarily need to recompile shader.
-    // Just rendering next frame is enough if state is updated.
     this.reset();
   }
 
@@ -119,7 +110,21 @@ export class App {
     const mode = settings.mode;
     const coloring = settings.coloring;
 
-    await this.renderer.updateShader(userInput, mode, coloring);
+    // Create ShaderConfig
+    const config: ShaderConfig = {
+      backend: ShaderBackend.GLSL,
+      precision: ShaderPrecision.SINGLE,
+      mode: mode,
+      coloringIdx: coloring,
+      userExpression: userInput,
+    };
+
+    // Generate Source
+    const fs = await ShaderFactory.generate(config);
+    if (!fs) return;
+
+    // Update Renderer
+    await this.renderer.setShader(fs);
 
     if (this.uiManager.elements.runCheckbox.checked) {
       this.startAnimation();
@@ -165,7 +170,6 @@ export class App {
 
     const offsets = this.uiManager.getOffsets();
 
-    // Construct RenderState
     const state = {
       canvasWidth: this.uiManager.canvas.width,
       canvasHeight: this.uiManager.canvas.height,

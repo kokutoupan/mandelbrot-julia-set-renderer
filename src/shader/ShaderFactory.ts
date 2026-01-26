@@ -1,0 +1,35 @@
+import { IShaderGenerator } from "./IShaderGenerator";
+import { ShaderConfig, ShaderBackend, ShaderPrecision } from "./ShaderConfig";
+import { GlslSingleGenerator } from "./generators/GlslSingleGenerator";
+
+export class ShaderFactory {
+  private static generators: Map<string, IShaderGenerator> = new Map();
+
+  static async generate(config: ShaderConfig): Promise<string | undefined> {
+    const key = `${config.backend}_${config.precision}`;
+
+    let generator = this.generators.get(key);
+    if (!generator) {
+      generator = this.CreateGenerator(config.backend, config.precision);
+      this.generators.set(key, generator);
+    }
+
+    return generator.generate(config);
+  }
+
+  private static CreateGenerator(
+    backend: ShaderBackend,
+    precision: ShaderPrecision,
+  ): IShaderGenerator {
+    if (
+      backend === ShaderBackend.GLSL &&
+      precision === ShaderPrecision.SINGLE
+    ) {
+      return new GlslSingleGenerator();
+    }
+
+    throw new Error(
+      `Unsupported shader configuration: ${backend} - ${precision}`,
+    );
+  }
+}

@@ -1,5 +1,4 @@
 import { IRenderer, RenderState } from "./IRenderer";
-import { expressionToShader } from "../expressionShader";
 
 export class WebGLRenderer implements IRenderer {
   canvas: HTMLCanvasElement;
@@ -35,20 +34,12 @@ export class WebGLRenderer implements IRenderer {
   }
 
   resize(width: number, height: number): void {
-    // Canvas size is handled externally or logic here?
-    // In App.ts, it sets canvas.width/height.
-    // Renderer's resize usually updates viewport.
     this.gl?.viewport(0, 0, width, height);
   }
 
-  async updateShader(
-    userExpression: string,
-    mode: number,
-    coloringIdx: number,
-  ): Promise<void> {
-    const fs = await expressionToShader(userExpression, mode, coloringIdx);
-    if (!fs) return;
-    this._resetShader(fs);
+  // Changed from updateShader to setShader
+  async setShader(shaderSource: string): Promise<void> {
+    this._resetShader(shaderSource);
   }
 
   render(state: RenderState): void {
@@ -144,7 +135,7 @@ export class WebGLRenderer implements IRenderer {
     } else {
       console.error(gl.getShaderInfoLog(shader));
     }
-    return shader; // Added return just in case, though undefined if failed
+    return shader;
   }
 
   private createFragmentShader(fs: string) {
@@ -158,7 +149,6 @@ export class WebGLRenderer implements IRenderer {
     if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       return shader;
     } else {
-      // alert(gl.getShaderInfoLog(shader)); // Maybe suppress alert in production?
       console.error(gl.getShaderInfoLog(shader));
     }
 
