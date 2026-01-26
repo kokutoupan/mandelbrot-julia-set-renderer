@@ -1,24 +1,27 @@
-export class Renderer {
+import { IRenderer, RenderState } from "./IRenderer";
+import { expressionToShader } from "../expressionShader";
+
+export class WebGLRenderer implements IRenderer {
   canvas: HTMLCanvasElement;
-  gl: WebGL2RenderingContext | null; // Allow null to match getContext behavior or handle it
+  gl: WebGL2RenderingContext | null;
   vs: WebGLShader | undefined;
-  vPosition: WebGLBuffer | null = null; // Initialize
+  vPosition: WebGLBuffer | null = null;
   vIndex: WebGLBuffer | null = null;
   ubo: WebGLBuffer | null = null;
   uboBlockIndex: number = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    const gl = canvas.getContext("webgl2");
-    this.gl = gl;
-
+    this.gl = canvas.getContext("webgl2");
     if (!this.gl) {
       console.error("WebGL2 is not supported in your browser");
-      return;
     }
+  }
+
+  async initialize(): Promise<void> {
+    if (!this.gl) return;
 
     this.vs = this.createVertexShader();
-
     const position = [
       -1.0, 1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0,
     ];
@@ -31,7 +34,48 @@ export class Renderer {
     this.gl.bufferData(this.gl.UNIFORM_BUFFER, 8 * 4 * 4, this.gl.DYNAMIC_DRAW);
   }
 
-  resetShader(fs: string) {
+  resize(width: number, height: number): void {
+    // Canvas size is handled externally or logic here?
+    // In App.ts, it sets canvas.width/height.
+    // Renderer's resize usually updates viewport.
+    this.gl?.viewport(0, 0, width, height);
+  }
+
+  async updateShader(
+    userExpression: string,
+    mode: number,
+    coloringIdx: number,
+  ): Promise<void> {
+    const fs = await expressionToShader(userExpression, mode, coloringIdx);
+    if (!fs) return;
+    this._resetShader(fs);
+  }
+
+  render(state: RenderState): void {
+    const gl = this.gl;
+    if (!gl) return;
+
+    const data = new Float32Array([
+      state.mouse.x,
+      state.mouse.y,
+      state.canvasWidth,
+      state.canvasHeight,
+      state.offsetX,
+      state.offsetY,
+      state.time,
+      state.zoom,
+    ]);
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, data);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    gl.flush();
+  }
+
+  // --- Internal Helper Methods ---
+
+  private _resetShader(fs: string) {
     console.log("resetShader");
     const gl = this.gl;
     if (!gl || !this.vs) return;
@@ -55,18 +99,7 @@ export class Renderer {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
   }
 
-  render(updatedUniformData: Float32Array) {
-    const gl = this.gl;
-    if (!gl) return;
-
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, updatedUniformData);
-    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-    gl.flush();
-  }
-
-  createVbo(data: number[]) {
+  private createVbo(data: number[]) {
     const gl = this.gl;
     if (!gl) return null;
     const vbo = gl.createBuffer();
@@ -76,7 +109,7 @@ export class Renderer {
     return vbo;
   }
 
-  createIbo(data: number[]) {
+  private createIbo(data: number[]) {
     const gl = this.gl;
     if (!gl) return null;
     const ibo = gl.createBuffer();
@@ -90,7 +123,7 @@ export class Renderer {
     return ibo;
   }
 
-  createVertexShader() {
+  private createVertexShader() {
     const gl = this.gl;
     if (!gl) return;
 
@@ -109,12 +142,12 @@ export class Renderer {
     if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       return shader;
     } else {
-      alert(gl.getShaderInfoLog(shader));
-      console.log(gl.getShaderInfoLog(shader));
+      console.error(gl.getShaderInfoLog(shader));
     }
+    return shader; // Added return just in case, though undefined if failed
   }
 
-  createFragmentShader(fs: string) {
+  private createFragmentShader(fs: string) {
     const gl = this.gl;
     if (!gl) return;
     const shader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -125,13 +158,14 @@ export class Renderer {
     if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       return shader;
     } else {
-      alert(gl.getShaderInfoLog(shader));
-      console.log(gl.getShaderInfoLog(shader));
+      // alert(gl.getShaderInfoLog(shader)); // Maybe suppress alert in production?
+      console.error(gl.getShaderInfoLog(shader));
     }
 
     return shader;
   }
-  createProgram(vs: WebGLShader, fs: WebGLShader) {
+
+  private createProgram(vs: WebGLShader, fs: WebGLShader) {
     const gl = this.gl;
     if (!gl) return null;
 
