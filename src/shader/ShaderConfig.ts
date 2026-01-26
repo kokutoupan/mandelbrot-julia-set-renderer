@@ -4,6 +4,7 @@ export enum ShaderBackend {
 
 export enum ShaderPrecision {
   SINGLE = "SINGLE",
+  DOUBLE = "DOUBLE",
 }
 
 export enum FractalMode {

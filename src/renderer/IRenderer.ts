@@ -1,3 +1,5 @@
+import { ShaderPrecision } from "../shader/ShaderConfig";
+
 export interface RenderState {
   canvasWidth: number;
   canvasHeight: number;
@@ -11,6 +13,9 @@ export interface RenderState {
 export interface IRenderer {
   initialize(): Promise<void>;
   resize(width: number, height: number): void;
+
+  // 精度を設定する
+  setPrecision(precision: ShaderPrecision): void;
 
   // シェーダーソースを受け取り更新する
   setShader(shaderSource: string): Promise<void>;

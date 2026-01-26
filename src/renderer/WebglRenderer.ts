@@ -1,4 +1,5 @@
 import { IRenderer, RenderState } from "./IRenderer";
+import { ShaderPrecision } from "../shader/ShaderConfig";
 
 export class WebGLRenderer implements IRenderer {
   canvas: HTMLCanvasElement;
@@ -37,31 +38,78 @@ export class WebGLRenderer implements IRenderer {
     this.gl?.viewport(0, 0, width, height);
   }
 
+  // 精度状態
+  precision: ShaderPrecision = ShaderPrecision.SINGLE;
+
   // Changed from updateShader to setShader
   async setShader(shaderSource: string): Promise<void> {
     this._resetShader(shaderSource);
+  }
+
+  setPrecision(precision: ShaderPrecision): void {
+    this.precision = precision;
   }
 
   render(state: RenderState): void {
     const gl = this.gl;
     if (!gl) return;
 
-    const data = new Float32Array([
-      state.mouse.x,
-      state.mouse.y,
-      state.canvasWidth,
-      state.canvasHeight,
-      state.offsetX,
-      state.offsetY,
-      state.time,
-      state.zoom,
-    ]);
+    let data: Float32Array;
+
+    if (this.precision === ShaderPrecision.DOUBLE) {
+      // Double Precision Packing
+      // Needs to match main.glsl (Double) layout
+      // mouse_x (vec2), mouse_y (vec2), resolution (vec2), offset_x (vec2), offset_y (vec2), zoom (vec2), time (float)
+
+      const [mx_hi, mx_lo] = this.splitDouble(state.mouse.x);
+      const [my_hi, my_lo] = this.splitDouble(state.mouse.y);
+      const [ox_hi, ox_lo] = this.splitDouble(state.offsetX);
+      const [oy_hi, oy_lo] = this.splitDouble(state.offsetY);
+      const [zm_hi, zm_lo] = this.splitDouble(state.zoom);
+
+      data = new Float32Array([
+        mx_hi,
+        mx_lo,
+        my_hi,
+        my_lo,
+        state.canvasWidth,
+        state.canvasHeight,
+        ox_hi,
+        ox_lo,
+        oy_hi,
+        oy_lo,
+        zm_hi,
+        zm_lo,
+        state.time,
+        0.0,
+        0.0,
+        0.0, // padding to 64 bytes (16 floats) just to be aligned
+      ]);
+    } else {
+      // Single Precision Packing
+      data = new Float32Array([
+        state.mouse.x,
+        state.mouse.y,
+        state.canvasWidth,
+        state.canvasHeight,
+        state.offsetX,
+        state.offsetY,
+        state.time,
+        state.zoom,
+      ]);
+    }
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo);
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, data);
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
     gl.flush();
+  }
+
+  private splitDouble(val: number): [number, number] {
+    const hi = Math.fround(val);
+    const lo = Math.fround(val - hi);
+    return [hi, lo];
   }
 
   // --- Internal Helper Methods ---

@@ -119,6 +119,9 @@ export class App {
       userExpression: userInput,
     };
 
+    // Update Renderer Precision
+    this.renderer.setPrecision(config.precision);
+
     // Generate Source
     const fs = await ShaderFactory.generate(config);
     if (!fs) return;

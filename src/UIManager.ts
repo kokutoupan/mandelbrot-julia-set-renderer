@@ -105,7 +105,7 @@ export class UIManager {
 
   updateInfo(mx: number, my: number, zoom: number) {
     const posText = `Position: (${mx.toFixed(4)}, ${my.toFixed(4)})`;
-    const zoomText = `Zoom: ${zoom.toFixed(2)}`;
+    const zoomText = `Zoom: ${zoom.toExponential(2)}`;
     this.elements.dataDisplay.innerText = `${posText} | ${zoomText}`;
   }
 
