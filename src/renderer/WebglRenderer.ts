@@ -109,6 +109,7 @@ export class WebGLRenderer implements IRenderer {
   private splitDouble(val: number): [number, number] {
     const hi = Math.fround(val);
     const lo = Math.fround(val - hi);
+    // console.log(hi, lo);
     return [hi, lo];
   }
 

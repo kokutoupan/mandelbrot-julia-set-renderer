@@ -1,5 +1,6 @@
 export enum ShaderBackend {
   GLSL = "GLSL",
+  WGSL = "WGSL",
 }
 
 export enum ShaderPrecision {

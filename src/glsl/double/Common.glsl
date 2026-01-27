@@ -52,18 +52,18 @@ vec2 dadd(vec2 a, vec2 b) {
     vec2 s = two_sum(a.x, b.x);
     vec2 t = two_sum(a.y, b.y);
     s.y += t.x;
-    s = fast_two_sum(s.x, s.y);
+    s = two_sum(s.x, s.y);
     s.y += t.y;
-    return fast_two_sum(s.x, s.y);
+    return two_sum(s.x, s.y);
 }
 
 vec2 dsub(vec2 a, vec2 b) {
     vec2 s = two_sum(a.x, -b.x);
     vec2 t = two_sum(a.y, -b.y);
     s.y += t.x;
-    s = fast_two_sum(s.x, s.y);
+    s = two_sum(s.x, s.y);
     s.y += t.y;
-    return fast_two_sum(s.x, s.y);
+    return two_sum(s.x, s.y);
 }
 
 vec2 dneg(vec2 a) {
@@ -73,7 +73,7 @@ vec2 dneg(vec2 a) {
 vec2 dmul(vec2 a, vec2 b) {
     vec2 p = two_prod(a.x, b.x);
     p.y += a.x * b.y + a.y * b.x;
-    return fast_two_sum(p.x, p.y);
+    return two_sum(p.x, p.y);
 }
 
 vec2 ddiv(vec2 a, vec2 b) {

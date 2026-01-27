@@ -2,6 +2,7 @@ import { IShaderGenerator } from "./IShaderGenerator";
 import { ShaderConfig, ShaderBackend, ShaderPrecision } from "./ShaderConfig";
 import { GlslSingleGenerator } from "./generators/GlslSingleGenerator";
 import { GlslDoubleGenerator } from "./generators/GlslDoubleGenerator";
+import { WgslDoubleGenerator } from "./generators/WgslDoubleGenerator";
 
 export class ShaderFactory {
   private static generators: Map<string, IShaderGenerator> = new Map();
@@ -28,6 +29,12 @@ export class ShaderFactory {
       }
       if (precision === ShaderPrecision.DOUBLE) {
         return new GlslDoubleGenerator();
+      }
+    }
+
+    if (backend === ShaderBackend.WGSL) {
+      if (precision === ShaderPrecision.DOUBLE) {
+        return new WgslDoubleGenerator();
       }
     }
 

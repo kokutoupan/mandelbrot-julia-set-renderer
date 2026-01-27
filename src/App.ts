@@ -1,4 +1,5 @@
 import { WebGLRenderer } from "./renderer/WebglRenderer";
+import { WebGPURenderer } from "./renderer/WebGPURenderer";
 import { InputManager } from "./InputManager";
 import { UIManager } from "./UIManager";
 import { IRenderer } from "./renderer/IRenderer";
@@ -27,7 +28,15 @@ export class App {
 
     this.uiManager = new UIManager();
     this.inputManager = new InputManager(this.uiManager.canvas);
-    this.renderer = new WebGLRenderer(this.uiManager.canvas);
+
+    // @ts-ignore
+    if (navigator.gpu) {
+      console.log("Using WebGPURenderer");
+      this.renderer = new WebGPURenderer(this.uiManager.canvas);
+    } else {
+      console.log("Using WebGLRenderer");
+      this.renderer = new WebGLRenderer(this.uiManager.canvas);
+    }
 
     // State
     this.animationId = null;
@@ -71,9 +80,11 @@ export class App {
 
   // ... detectMobile ...
   async detectMobile() {
+    // @ts-ignore
     if (navigator.userAgentData?.getHighEntropyValues) {
       try {
         const entropyValues =
+          // @ts-ignore
           await navigator.userAgentData.getHighEntropyValues(["mobile"]);
         if (entropyValues.mobile) {
           console.log("isMobile");
@@ -110,10 +121,14 @@ export class App {
     const mode = settings.mode;
     const coloring = settings.coloring;
 
+    // Determine Backend
+    const isWebGPU = this.renderer instanceof WebGPURenderer;
+    const backend = isWebGPU ? ShaderBackend.WGSL : ShaderBackend.GLSL;
+
     // Create ShaderConfig
     const config: ShaderConfig = {
-      backend: ShaderBackend.GLSL,
-      precision: ShaderPrecision.SINGLE,
+      backend: backend,
+      precision: ShaderPrecision.DOUBLE,
       mode: mode,
       coloringIdx: coloring,
       userExpression: userInput,
