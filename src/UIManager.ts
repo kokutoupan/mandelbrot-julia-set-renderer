@@ -13,6 +13,7 @@ export interface UIElements {
   touchInfo1: HTMLElement;
   touchInfo2: HTMLElement;
   radioForm: HTMLFormElement;
+  precisionSelect: HTMLSelectElement;
 }
 
 export interface UICallbacks {
@@ -44,6 +45,9 @@ export class UIManager {
       touchInfo1: document.getElementById("sousa1") as HTMLElement,
       touchInfo2: document.getElementById("sousa2") as HTMLElement,
       radioForm: document.getElementById("radioForm") as HTMLFormElement,
+      precisionSelect: document.getElementById(
+        "precision",
+      ) as HTMLSelectElement,
     };
   }
 
@@ -95,6 +99,7 @@ export class UIManager {
       modeValue,
       func: this.elements.functionInput.value + " ",
       coloring: Number(this.elements.coloringSelect.value),
+      precision: this.elements.precisionSelect.value,
     };
   }
 

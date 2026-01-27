@@ -46,11 +46,10 @@ fn two_prod(a: f32, b: f32) -> vec2<f32> {
 
 fn dadd(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
     let s = two_sum(a.x, b.x);
-    let t = two_sum(a.y, b.y);
-    let e = s.y + t.x;
-    let s_fast = two_sum(s.x, e); // Changed to two_sum for safety
-    let e_final = s_fast.y + t.y;
-    return two_sum(s_fast.x, e_final); // Changed to two_sum for safety
+    let e = a.y + b.y + s.y;
+    let high = s.x + e;
+    let low = e - (high - s.x);
+    return vec2<f32>(high, low);
 }
 
 fn dsub(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
@@ -68,9 +67,12 @@ fn dneg(a: vec2<f32>) -> vec2<f32> {
 
 fn dmul(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
     let p = two_prod(a.x, b.x);
-    var e = a.x * b.y + a.y * b.x;
-    e += p.y;
-    return two_sum(p.x, e);
+    // 誤差成分をより精密に集計する
+    let e = a.x * b.y + a.y * b.x + p.y;
+    // 最後に two_sum ではなく、正規化を含めた加算を行う
+    let high = p.x + e;
+    let low = e - (high - p.x);
+    return vec2<f32>(high, low);
 }
 
 fn ddiv(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {

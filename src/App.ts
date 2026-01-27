@@ -120,15 +120,21 @@ export class App {
     const userInput = settings.func;
     const mode = settings.mode;
     const coloring = settings.coloring;
+    const precisionStr = settings.precision;
 
     // Determine Backend
     const isWebGPU = this.renderer instanceof WebGPURenderer;
     const backend = isWebGPU ? ShaderBackend.WGSL : ShaderBackend.GLSL;
 
+    const precision =
+      precisionStr === "single"
+        ? ShaderPrecision.SINGLE
+        : ShaderPrecision.DOUBLE;
+
     // Create ShaderConfig
     const config: ShaderConfig = {
       backend: backend,
-      precision: ShaderPrecision.SINGLE,
+      precision: precision,
       mode: mode,
       coloringIdx: coloring,
       userExpression: userInput,
