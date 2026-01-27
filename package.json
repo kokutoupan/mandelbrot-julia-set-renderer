@@ -22,6 +22,7 @@
   "homepage": "https://github.com/kokutoupan/mandelbrot-julia-set-renderer#readme",
   "devDependencies": {
     "@types/webgl2": "^0.0.12",
+    "@webgpu/types": "^0.1.69",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-top-level-await": "^1.6.0",

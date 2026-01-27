@@ -1,7 +1,14 @@
-import { Renderer } from "./renderer";
+import { WebGLRenderer } from "./renderer/WebglRenderer";
+import { WebGPURenderer } from "./renderer/WebGPURenderer";
 import { InputManager } from "./InputManager";
 import { UIManager } from "./UIManager";
-import { expressionToShader } from "./expressionShader";
+import { IRenderer } from "./renderer/IRenderer";
+import { ShaderFactory } from "./shader/ShaderFactory";
+import {
+  ShaderConfig,
+  ShaderBackend,
+  ShaderPrecision,
+} from "./shader/ShaderConfig";
 
 /**
  * Main Application Class
@@ -9,7 +16,7 @@ import { expressionToShader } from "./expressionShader";
 export class App {
   uiManager: UIManager;
   inputManager: InputManager;
-  renderer: Renderer;
+  renderer: IRenderer;
   animationId: number | null;
   isRunning: boolean;
   startTime: number;
@@ -21,7 +28,15 @@ export class App {
 
     this.uiManager = new UIManager();
     this.inputManager = new InputManager(this.uiManager.canvas);
-    this.renderer = new Renderer(this.uiManager.canvas);
+
+    // @ts-ignore
+    if (navigator.gpu) {
+      console.log("Using WebGPURenderer");
+      this.renderer = new WebGPURenderer(this.uiManager.canvas);
+    } else {
+      console.log("Using WebGLRenderer");
+      this.renderer = new WebGLRenderer(this.uiManager.canvas);
+    }
 
     // State
     this.animationId = null;
@@ -33,15 +48,18 @@ export class App {
     this.SYUGO_MODE = ["MON", "Juri"];
   }
 
-  init() {
+  async init() {
     console.log("App init");
+
+    // Initialize Renderer
+    await this.renderer.initialize();
 
     // 1. Load state from URL
     this.uiManager.loadStateFromUrl();
     this.inputManager.updateDimensions(
       window.innerWidth,
       window.innerHeight - 80,
-    ); // roughly
+    );
 
     // 2. Bind UI events
     this.uiManager.bindEvents({
@@ -49,9 +67,7 @@ export class App {
       onReset: () => this.reset(),
       onClear: () => this.inputManager.reset(),
       onToggleAnimation: (checked: boolean) => this.toggleAnimation(checked),
-      onOffsetChange: () => {
-        /* Offsets are read directly when needed, or we can sync here if strict state needed */
-      },
+      onOffsetChange: () => {},
     });
 
     // 3. Mobile check
@@ -62,10 +78,13 @@ export class App {
     this.reset();
   }
 
+  // ... detectMobile ...
   async detectMobile() {
+    // @ts-ignore
     if (navigator.userAgentData?.getHighEntropyValues) {
       try {
         const entropyValues =
+          // @ts-ignore
           await navigator.userAgentData.getHighEntropyValues(["mobile"]);
         if (entropyValues.mobile) {
           console.log("isMobile");
@@ -79,8 +98,10 @@ export class App {
 
   resizeCanvas() {
     const ww = window.innerWidth;
-    const wh = window.innerHeight - 80; // UI_OFFSET_HEIGHT
+    const wh = window.innerHeight - 80;
     const size = Math.min(ww, wh, 1024);
+
+    this.renderer.resize(size, size);
 
     this.uiManager.canvas.width = size;
     this.uiManager.canvas.height = size;
@@ -89,7 +110,6 @@ export class App {
 
     console.log(`resize: width=${size}, height=${size}`);
 
-    // isReady check was in original, but renderer doesn't expose it explicitly. redundant?
     this.reset();
   }
 
@@ -97,15 +117,38 @@ export class App {
     this.stopAnimation();
 
     const settings = this.uiManager.getFunctionSettings();
-    const userInput = settings.func; // already added space in UIManager? yes.
+    const userInput = settings.func;
     const mode = settings.mode;
     const coloring = settings.coloring;
+    const precisionStr = settings.precision;
 
-    const fs = await expressionToShader(userInput, mode, coloring);
+    // Determine Backend
+    const isWebGPU = this.renderer instanceof WebGPURenderer;
+    const backend = isWebGPU ? ShaderBackend.WGSL : ShaderBackend.GLSL;
 
-    if (fs == null) return;
+    const precision =
+      precisionStr === "single"
+        ? ShaderPrecision.SINGLE
+        : ShaderPrecision.DOUBLE;
 
-    this.renderer.resetShader(fs);
+    // Create ShaderConfig
+    const config: ShaderConfig = {
+      backend: backend,
+      precision: precision,
+      mode: mode,
+      coloringIdx: coloring,
+      userExpression: userInput,
+    };
+
+    // Update Renderer Precision
+    this.renderer.setPrecision(config.precision);
+
+    // Generate Source
+    const fs = await ShaderFactory.generate(config);
+    if (!fs) return;
+
+    // Update Renderer
+    await this.renderer.setShader(fs);
 
     if (this.uiManager.elements.runCheckbox.checked) {
       this.startAnimation();
@@ -116,6 +159,7 @@ export class App {
     );
   }
 
+  // ... start/stop/toggleAnimation ...
   startAnimation() {
     if (this.isRunning) return;
     this.isRunning = true;
@@ -150,15 +194,17 @@ export class App {
 
     const offsets = this.uiManager.getOffsets();
 
-    const uniformData = this.inputManager.getUniformData(
-      this.uiManager.canvas.width,
-      this.uiManager.canvas.height,
-      offsets.x,
-      offsets.y,
-      currentTime,
-    );
+    const state = {
+      canvasWidth: this.uiManager.canvas.width,
+      canvasHeight: this.uiManager.canvas.height,
+      offsetX: offsets.x,
+      offsetY: offsets.y,
+      zoom: this.inputManager.zoom,
+      mouse: { x: this.inputManager.mx, y: this.inputManager.my },
+      time: currentTime,
+    };
 
-    this.renderer.render(uniformData);
+    this.renderer.render(state);
 
     this.uiManager.updateInfo(
       this.inputManager.mx,
