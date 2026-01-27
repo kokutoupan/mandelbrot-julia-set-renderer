@@ -128,7 +128,7 @@ export class App {
     // Create ShaderConfig
     const config: ShaderConfig = {
       backend: backend,
-      precision: ShaderPrecision.DOUBLE,
+      precision: ShaderPrecision.SINGLE,
       mode: mode,
       coloringIdx: coloring,
       userExpression: userInput,

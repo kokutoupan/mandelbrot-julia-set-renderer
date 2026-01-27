@@ -135,36 +135,58 @@ export class WebGPURenderer implements IRenderer {
       return;
 
     // Pack Uniforms
-    // Layout: mx_hi, mx_lo, my_hi, my_lo, res_x, res_y, ox_hi, ox_lo, oy_hi, oy_lo, zm_hi, zm_lo, time
-    // 13 floats.
+    // Layout:
+    // Single: mx, my, res_x, res_y, ox, oy, zm, time (8 floats)
+    // Double: mx_hi, mx_lo, my_hi, my_lo, res_x, res_y, ox_hi, ox_lo, oy_hi, oy_lo, zm_hi, zm_lo, time (13 floats)
 
     let data: Float32Array;
 
-    // For now assuming Double layout because that's what main.wgsl expects
-    const [mx_hi, mx_lo] = this.splitDouble(state.mouse.x);
-    const [my_hi, my_lo] = this.splitDouble(state.mouse.y);
-    const [ox_hi, ox_lo] = this.splitDouble(state.offsetX); // RenderState.offsetX is number (double)
-    const [oy_hi, oy_lo] = this.splitDouble(state.offsetY);
-    const [zm_hi, zm_lo] = this.splitDouble(state.zoom);
+    if (this.precision === ShaderPrecision.SINGLE) {
+      data = new Float32Array([
+        state.mouse.x,
+        state.mouse.y,
+        state.canvasWidth,
+        state.canvasHeight,
+        state.offsetX,
+        state.offsetY,
+        state.zoom,
+        state.time,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0, // Padding to 64 bytes (16 floats)
+      ]);
+    } else {
+      // Double Precision
+      const [mx_hi, mx_lo] = this.splitDouble(state.mouse.x);
+      const [my_hi, my_lo] = this.splitDouble(state.mouse.y);
+      const [ox_hi, ox_lo] = this.splitDouble(state.offsetX);
+      const [oy_hi, oy_lo] = this.splitDouble(state.offsetY);
+      const [zm_hi, zm_lo] = this.splitDouble(state.zoom);
 
-    data = new Float32Array([
-      mx_hi,
-      mx_lo,
-      my_hi,
-      my_lo,
-      state.canvasWidth,
-      state.canvasHeight,
-      ox_hi,
-      ox_lo,
-      oy_hi,
-      oy_lo,
-      zm_hi,
-      zm_lo,
-      state.time,
-      0.0,
-      0.0,
-      0.0, // Padding to 16 Floats (64 bytes)
-    ]);
+      data = new Float32Array([
+        mx_hi,
+        mx_lo,
+        my_hi,
+        my_lo,
+        state.canvasWidth,
+        state.canvasHeight,
+        ox_hi,
+        ox_lo,
+        oy_hi,
+        oy_lo,
+        zm_hi,
+        zm_lo,
+        state.time,
+        0.0,
+        0.0,
+        0.0, // Padding to 16 Floats (64 bytes)
+      ]);
+    }
 
     this.device.queue.writeBuffer(this.uniformBuffer!, 0, data as any);
 
