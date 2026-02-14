@@ -14,7 +14,7 @@ vec3 hsv2rgb(vec3 c) {
 // =========================================================
 
 // --- Constants ---
-const float SPLITTER = 134217729.0; // 2^27 + 1
+const float SPLITTER = 4097.0; // 2^12 + 1 for 32-bit floats
 
 // --- Helper Functions ---
 
